@@ -16,9 +16,9 @@ export const deleteComments = new lambda.CallbackFunction<
 >('deleteComments', {
   runtime: lambda.Runtime.NodeJS16dX,
   callback: async event => {
-    const { commentID } = (event as any).pathParameters;
+    const { commentID } = event.pathParameters!;
 
-    const userID = decodeJWT(getToken(event as any)).data?.id;
+    const userID = decodeJWT(getToken(event)).data?.id;
     if (!userID) return populateResponse(STATUS_CODES.UNAUTHORIZED, 'Unauthorized');
 
     const client = new sdk.DynamoDB.DocumentClient();

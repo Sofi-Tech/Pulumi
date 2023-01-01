@@ -13,7 +13,7 @@ export const getComments = new lambda.CallbackFunction<
   }
 >('getComments', {
   callback: async event => {
-    const { postID } = (event as any).pathParameters;
+    const { postID } = event.pathParameters!;
 
     const client = new sdk.DynamoDB.DocumentClient();
     try {

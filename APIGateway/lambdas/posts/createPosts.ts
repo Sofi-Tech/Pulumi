@@ -21,7 +21,7 @@ export const createPosts = new lambda.CallbackFunction<
     if (!parsed || error) return populateResponse(STATUS_CODES.BAD_REQUEST, error ?? 'Bad Request');
 
     const { title, content } = parsed as IPost & Pick<CPost, 'content' | 'title'>;
-    const userID = decodeJWT(getToken(event as any)).data?.id;
+    const userID = decodeJWT(getToken(event)).data?.id;
     if (!userID) return populateResponse(STATUS_CODES.UNAUTHORIZED, 'Unauthorized');
 
     const postID = generateFlake(Date.now(), postEpoch);

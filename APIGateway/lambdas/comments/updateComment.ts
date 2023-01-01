@@ -18,12 +18,12 @@ export const updateComments = new lambda.CallbackFunction<
 >('updateComments', {
   runtime: lambda.Runtime.NodeJS16dX,
   callback: async event => {
-    const { commentID } = (event as any).pathParameters;
+    const { commentID } = event.pathParameters!;
     const { error, parsed } = validateCommentBody(event, { content: true });
     if (!parsed || error) return populateResponse(STATUS_CODES.BAD_REQUEST, error ?? 'Bad Request');
 
     const { content } = parsed as IComment & Pick<CComment, 'commentID' | 'content'>;
-    const userID = decodeJWT(getToken(event as any)).data?.id;
+    const userID = decodeJWT(getToken(event)).data?.id;
     if (!userID) return populateResponse(STATUS_CODES.UNAUTHORIZED, 'Unauthorized');
 
     const updateObj: IComment = {

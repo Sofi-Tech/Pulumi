@@ -22,7 +22,7 @@ export const updatePosts = new lambda.CallbackFunction<
     if (!parsed || error) return populateResponse(STATUS_CODES.BAD_REQUEST, error ?? 'Bad Request');
 
     const { postID, title, content, tags } = parsed as IPost & Pick<CPost, 'postID'>;
-    const userID = decodeJWT(getToken(event as any)).data?.id;
+    const userID = decodeJWT(getToken(event)).data?.id;
     if (!userID) return populateResponse(STATUS_CODES.UNAUTHORIZED, 'Unauthorized');
 
     const updateObj = {
