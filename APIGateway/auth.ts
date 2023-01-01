@@ -1,12 +1,13 @@
 import { lambda, sdk } from '@pulumi/aws';
 
 import type { CUser, IUser } from '#tables/tables/user';
+import type { lambdaEvent } from '#utils/util';
 import type { classic } from '@pulumi/awsx';
 
 import { TokenTable, UsersTable } from '#tables/index';
 import { cryptoDecrypt, decodeJWT, jwtVerify } from '#utils/util';
 
-export const getToken = (event: classic.apigateway.AuthorizerEvent): string => {
+export const getToken = (event: classic.apigateway.AuthorizerEvent | lambdaEvent): string => {
   const header = event.headers?.Authorization;
   if (header && header.split(' ')[0] === 'Bearer') return header.split(' ')[1];
   return '';
@@ -75,8 +76,21 @@ const authenticate = async (event: classic.apigateway.AuthorizerEvent): Promise<
   }
 };
 
-export const authLambda = new lambda.CallbackFunction('authMiddleware', {
-  callback: async (event: classic.apigateway.AuthorizerEvent) => {
+export const authLambda = new lambda.CallbackFunction<
+  classic.apigateway.AuthorizerEvent,
+  {
+    policyDocument: {
+      Statement: {
+        Action: string;
+        Effect: string;
+        Resource: string;
+      }[];
+      Version: string;
+    };
+    principalId: string;
+  }
+>('authMiddleware', {
+  callback: async event => {
     let effect = 'Allow';
     try {
       effect = await authenticate(event);

@@ -4,11 +4,18 @@ import { CommentsTable } from '../../../database/index';
 import { getToken } from '../../auth';
 
 import type { CComment, IComment } from '#tables/tables/comment';
+import type { lambdaEvent } from '#utils/util';
 
 import { validateCommentBody } from '#tables/validation/comments';
 import { decodeJWT, populateResponse, STATUS_CODES, updateObject } from '#utils/util';
 
-export const updateComments = new lambda.CallbackFunction('updateComments', {
+export const updateComments = new lambda.CallbackFunction<
+  lambdaEvent,
+  {
+    body: string;
+    statusCode: number;
+  }
+>('updateComments', {
   runtime: lambda.Runtime.NodeJS16dX,
   callback: async event => {
     const { commentID } = (event as any).pathParameters;

@@ -3,12 +3,19 @@ import { lambda, sdk } from '@pulumi/aws';
 import { getToken } from '../../auth';
 
 import type { CPost, IPost } from '#tables/tables/post';
+import type { lambdaEvent } from '#utils/util';
 
 import { PostsTable } from '#tables/index';
 import { validatePostBody } from '#tables/validation/posts';
 import { decodeJWT, generateFlake, populateResponse, postEpoch, STATUS_CODES } from '#utils/util';
 
-export const createPosts = new lambda.CallbackFunction('createPosts', {
+export const createPosts = new lambda.CallbackFunction<
+  lambdaEvent,
+  {
+    body: string;
+    statusCode: number;
+  }
+>('createPosts', {
   callback: async event => {
     const { error, parsed } = validatePostBody(event, { title: true, content: true });
     if (!parsed || error) return populateResponse(STATUS_CODES.BAD_REQUEST, error ?? 'Bad Request');

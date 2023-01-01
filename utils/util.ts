@@ -4,6 +4,8 @@ import 'dotenv/config';
 import { AES, enc } from 'crypto-js';
 import { sign, verify, decode } from 'jsonwebtoken';
 
+import type { classic } from '@pulumi/awsx';
+
 const signingKey = process.env.SIGNING_KEY!;
 const secretKey = process.env.SECRET_KEY!;
 let INCREMENT = BigInt(0);
@@ -133,6 +135,11 @@ export const makeCustomError = (message: string, code: CUSTOM_ERROR_CODES) => {
   error.name = code.toString();
   return error;
 };
+
+export type lambdaEvent = Omit<
+  classic.apigateway.AuthorizerEvent,
+  'apiId' | 'authorizationToken' | 'domainName' | 'methodArn' | 'type'
+>;
 
 export const postEpoch = 1_609_459_200_000;
 export const userEpoch = 1_609_459_200_000;

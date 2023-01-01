@@ -1,12 +1,19 @@
 import { lambda, sdk } from '@pulumi/aws';
 
 import type { CUser, IUser } from '#tables/tables/user';
+import type { lambdaEvent } from '#utils/util';
 
 import { UsersTable } from '#tables/index';
 import { validateUserBody } from '#tables/validation/users';
 import { cryptoEncrypt, generateFlake, userEpoch, jwtSign, populateResponse } from '#utils/util';
 
-export const signUp = new lambda.CallbackFunction('signUp', {
+export const signUp = new lambda.CallbackFunction<
+  lambdaEvent,
+  {
+    body: string;
+    statusCode: number;
+  }
+>('signUp', {
   runtime: lambda.Runtime.NodeJS16dX,
   callback: async event => {
     const { error, parsed } = validateUserBody(event, { email: true, password: true, name: true });

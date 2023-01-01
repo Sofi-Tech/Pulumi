@@ -1,9 +1,17 @@
 import { lambda, sdk } from '@pulumi/aws';
 
+import type { lambdaEvent } from '#utils/util';
+
 import { CommentsTable } from '#tables/index';
 import { populateResponse, STATUS_CODES } from '#utils/util';
 
-export const getComments = new lambda.CallbackFunction('getComments', {
+export const getComments = new lambda.CallbackFunction<
+  lambdaEvent,
+  {
+    body: string;
+    statusCode: number;
+  }
+>('getComments', {
   callback: async event => {
     const { postID } = (event as any).pathParameters;
 

@@ -4,11 +4,18 @@ import { PostsTable } from '../../../database/index';
 import { getToken } from '../../auth';
 
 import type { CPost, IPost } from '#tables/tables/post';
+import type { lambdaEvent } from '#utils/util';
 
 import { validatePostBody } from '#tables/validation/posts';
 import { decodeJWT, populateResponse, STATUS_CODES, updateObject } from '#utils/util';
 
-export const updatePosts = new lambda.CallbackFunction('updatePosts', {
+export const updatePosts = new lambda.CallbackFunction<
+  lambdaEvent,
+  {
+    body: string;
+    statusCode: number;
+  }
+>('updatePosts', {
   runtime: lambda.Runtime.NodeJS16dX,
   callback: async event => {
     const { error, parsed } = validatePostBody(event, { postID: true });

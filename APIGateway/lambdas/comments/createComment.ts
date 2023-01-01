@@ -3,21 +3,28 @@ import { lambda, sdk } from '@pulumi/aws';
 import { getToken } from '../../auth';
 
 import type { CComment, IComment } from '#tables/tables/comment';
+import type { lambdaEvent } from '#utils/util';
 
 import { CommentsTable, PostsTable } from '#tables/index';
 import { validateCommentBody } from '#tables/validation/comments';
 import { decodeJWT, generateFlake, populateResponse, commentEpoch, STATUS_CODES } from '#utils/util';
 
-export const createComment = new lambda.CallbackFunction('createComment', {
+export const createComment = new lambda.CallbackFunction<
+  lambdaEvent,
+  {
+    body: string;
+    statusCode: number;
+  }
+>('createComment', {
   callback: async event => {
-    const { postID } = (event as any).pathParameters;
+    const { postID } = event.pathParameters!;
     const { error, parsed } = validateCommentBody(event, { content: true });
     if (!parsed || error) return populateResponse(STATUS_CODES.BAD_REQUEST, error ?? 'Bad Request');
 
     const { content, replyTo } = parsed as IComment & Pick<CComment, 'content' | 'replyTo'>;
     const client = new sdk.DynamoDB.DocumentClient();
 
-    const userID = decodeJWT(getToken(event as any)).data?.id;
+    const userID = decodeJWT(getToken(event)).data?.id;
     if (!userID) return populateResponse(STATUS_CODES.UNAUTHORIZED, 'Unauthorized');
 
     const comment: IComment = {

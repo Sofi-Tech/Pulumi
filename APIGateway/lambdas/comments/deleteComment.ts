@@ -3,9 +3,17 @@ import { lambda, sdk } from '@pulumi/aws';
 import { CommentsTable } from '../../../database/index';
 import { getToken } from '../../auth';
 
+import type { lambdaEvent } from '#utils/util';
+
 import { decodeJWT, populateResponse, STATUS_CODES } from '#utils/util';
 
-export const deleteComments = new lambda.CallbackFunction('deleteComments', {
+export const deleteComments = new lambda.CallbackFunction<
+  lambdaEvent,
+  {
+    body: string;
+    statusCode: number;
+  }
+>('deleteComments', {
   runtime: lambda.Runtime.NodeJS16dX,
   callback: async event => {
     const { commentID } = (event as any).pathParameters;
