@@ -10,22 +10,44 @@ const signingKey = process.env.SIGNING_KEY!;
 const secretKey = process.env.SECRET_KEY!;
 let INCREMENT = BigInt(0);
 
+/**
+ * Encrypts a key using AES encryption with a secret key
+ * @param key - The key to encrypt
+ * @returns The encrypted key
+ */
 export const cryptoEncrypt = (key: string) => {
   const token = key;
   // the length of the secret key determines the length of the sha
   return AES.encrypt(token, secretKey).toString();
 };
 
+/**
+ * Decrypts a key using AES decryption with a secret key
+ * @param key - The key to decrypt
+ * @returns The decrypted key
+ */
 export const cryptoDecrypt = (key: string) => {
   const bytes = AES.decrypt(key, secretKey);
   return bytes.toString(enc.Utf8);
 };
 
+/**
+ * Signs a JWT token with a signing key.
+ * Expires in 30 days
+ * @param id - The id of the user
+ * @param email - The email of the user
+ * @returns The signed JWT token
+ */
 export const jwtSign = (id: string, email: string) =>
   sign({ id, email }, signingKey, {
-    expiresIn: '30d', // expires in 30 days
+    expiresIn: '30d',
   });
 
+/**
+ * Decodes a JWT token
+ * @param token - The JWT token to decode
+ * @returns The decoded JWT token
+ */
 export const decodeJWT = (token: string) => {
   const decoded = decode(token) as { email: string; exp: number; iat: number; id: string } | null;
   return {
@@ -156,3 +178,15 @@ export type lambdaEvent = Omit<
 export const postEpoch = 1_609_459_200_000;
 export const userEpoch = 1_609_459_200_000;
 export const commentEpoch = 1_609_459_200_000;
+
+export const currentEndpoint =
+  process.env.NODE_ENV === 'production'
+    ? undefined
+    : {
+        endpoint: 'http://78.46.102.232:8000',
+        region: 'ap-south-1',
+        credentials: {
+          accessKeyId: 'fakekeyid',
+          secretAccessKey: 'fakekey,',
+        },
+      };

@@ -3,7 +3,7 @@ import { lambda, sdk } from '@pulumi/aws';
 import type { lambdaEvent } from '#utils/util';
 
 import { CommentsTable } from '#tables/index';
-import { CUSTOM_ERROR_CODES, makeCustomError, populateResponse, STATUS_CODES } from '#utils/util';
+import { currentEndpoint, CUSTOM_ERROR_CODES, makeCustomError, populateResponse, STATUS_CODES } from '#utils/util';
 
 export const getComments = new lambda.CallbackFunction<
   lambdaEvent,
@@ -15,7 +15,7 @@ export const getComments = new lambda.CallbackFunction<
   callback: async event => {
     const { postID } = event.pathParameters!;
 
-    const client = new sdk.DynamoDB.DocumentClient();
+    const client = new sdk.DynamoDB.DocumentClient(currentEndpoint);
     try {
       const items = await client
         .query({

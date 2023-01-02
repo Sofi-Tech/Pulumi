@@ -8,7 +8,14 @@ import { getToken } from '../../auth';
 import type { CUser, IUser } from '#tables/tables/user';
 import type { lambdaEvent } from '#utils/util';
 
-import { CUSTOM_ERROR_CODES, makeCustomError, decodeJWT, populateResponse, STATUS_CODES } from '#utils/util';
+import {
+  currentEndpoint,
+  CUSTOM_ERROR_CODES,
+  makeCustomError,
+  decodeJWT,
+  populateResponse,
+  STATUS_CODES,
+} from '#utils/util';
 
 export const feed = new lambda.CallbackFunction<
   lambdaEvent,
@@ -21,7 +28,7 @@ export const feed = new lambda.CallbackFunction<
   callback: async event => {
     const userID = decodeJWT(getToken(event)).data?.id;
 
-    const client = new sdk.DynamoDB.DocumentClient();
+    const client = new sdk.DynamoDB.DocumentClient(currentEndpoint);
     try {
       const { Items } = await client
         .query({
@@ -51,7 +58,16 @@ export const feed = new lambda.CallbackFunction<
         if (index === 0) return `contains(tags, :tags${index})`;
         return `${acc} OR contains(tags, :tags${index})`;
       }, '');
-
+      console.log(
+        FilterExpression,
+        ExpressionAttributeValues,
+        await client
+          .scan({
+            TableName: PostsTable.get(),
+            Limit: 10,
+          })
+          .promise(),
+      );
       // expensive operation
       const { Items: posts } = await client
         .scan({
@@ -61,7 +77,7 @@ export const feed = new lambda.CallbackFunction<
           ExpressionAttributeValues,
         })
         .promise();
-
+      console.log(posts);
       if (!posts?.length) {
         return populateResponse(
           STATUS_CODES.NOT_FOUND,

@@ -6,7 +6,7 @@ import { PostsTable } from '../../../database/index';
 
 import type { lambdaEvent } from '#utils/util';
 
-import { CUSTOM_ERROR_CODES, makeCustomError, populateResponse, STATUS_CODES } from '#utils/util';
+import { currentEndpoint, CUSTOM_ERROR_CODES, makeCustomError, populateResponse, STATUS_CODES } from '#utils/util';
 
 export const getPosts = new lambda.CallbackFunction<
   lambdaEvent,
@@ -18,7 +18,7 @@ export const getPosts = new lambda.CallbackFunction<
   runtime: lambda.Runtime.NodeJS16dX,
   callback: async event => {
     const { userID } = event.pathParameters!;
-    const client = new sdk.DynamoDB.DocumentClient();
+    const client = new sdk.DynamoDB.DocumentClient(currentEndpoint);
 
     try {
       const { Items } = await client

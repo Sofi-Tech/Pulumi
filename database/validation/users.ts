@@ -1,3 +1,5 @@
+import process from 'node:process';
+
 export const validateUserBody = (
   event: any,
   {
@@ -62,7 +64,12 @@ export const validateUserBody = (
       return { parsed: null, error: 'Name must be between 2 and 30 characters' };
     }
 
-    if (password && !/^(?=.*\d)(?=.*[!#$%&*@^])(?=.*[a-z])(?=.*[A-Z]).{8,}$/.test(parsed.password)) {
+    console.log(process.env.NODE_ENV);
+    if (
+      password &&
+      !/^(?=.*\d)(?=.*[!#$%&*@^])(?=.*[a-z])(?=.*[A-Z]).{8,}$/.test(parsed.password) &&
+      process.env.NODE_ENV !== 'development'
+    ) {
       return {
         parsed: null,
         error:

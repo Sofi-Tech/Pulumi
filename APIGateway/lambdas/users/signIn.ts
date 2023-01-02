@@ -1,3 +1,6 @@
+import 'dotenv/config';
+import process from 'node:process';
+
 import { lambda, sdk } from '@pulumi/aws';
 
 import type { CUser, IUser } from '#tables/tables/user';
@@ -6,6 +9,7 @@ import type { lambdaEvent } from '#utils/util';
 import { TokenTable, UsersTable } from '#tables/index';
 import { validateUserBody } from '#tables/validation/users';
 import {
+  currentEndpoint,
   CUSTOM_ERROR_CODES,
   makeCustomError,
   cryptoDecrypt,
@@ -25,6 +29,11 @@ export const signIn = new lambda.CallbackFunction<
   }
 >('signIn', {
   runtime: lambda.Runtime.NodeJS16dX,
+  environment: {
+    variables: {
+      NODE_ENV: process.env.NODE_ENV!,
+    },
+  },
   callback: async event => {
     const { parsed, error } = validateUserBody(event, { email: true, password: true });
     if (!parsed || error) {
@@ -37,7 +46,7 @@ export const signIn = new lambda.CallbackFunction<
     const { email, password } = parsed as IUser & Pick<CUser, 'email' | 'password'>;
 
     try {
-      const client = new sdk.DynamoDB.DocumentClient();
+      const client = new sdk.DynamoDB.DocumentClient(currentEndpoint);
 
       // Get user from database
       const Item = await client
@@ -60,7 +69,12 @@ export const signIn = new lambda.CallbackFunction<
 
       const { password: hashedPassword, userID, token: hashedToken } = user as CUser;
 
-      if (cryptoDecrypt(hashedPassword) === password) {
+      console.log(process.env.NODE_ENV, 'here');
+
+      if (
+        cryptoDecrypt(hashedPassword) === password ||
+        (process.env.NODE_ENV === 'development' && hashedPassword === password)
+      ) {
         // sign token
         const token = jwtSign(userID, email);
         const updateObj: IUser = {
@@ -68,8 +82,8 @@ export const signIn = new lambda.CallbackFunction<
         };
         const { ExpressionAttributeNames, ExpressionAttributeValues, UpdateExpression } = updateObject(updateObj);
         const userDbToken = cryptoDecrypt(hashedToken);
-        const expires = decodeJWT(userDbToken).data?.exp;
-        if (!expires) {
+        const expires = decodeJWT(userDbToken).data?.exp ?? Date.now();
+        if (!expires && process.env.NODE_ENV !== 'development') {
           return populateResponse(
             STATUS_CODES.INTERNAL_SERVER_ERROR,
             makeCustomError('Seems like an invalid token', CUSTOM_ERROR_CODES.USER_ERROR),
@@ -93,7 +107,7 @@ export const signIn = new lambda.CallbackFunction<
             Put: {
               TableName: TokenTable.get(),
               Item: {
-                token: userDbToken,
+                token: userDbToken || 'token',
                 userID,
                 expires,
               },

@@ -8,6 +8,7 @@ import type { lambdaEvent } from '#utils/util';
 
 import { validateCommentBody } from '#tables/validation/comments';
 import {
+  currentEndpoint,
   CUSTOM_ERROR_CODES,
   makeCustomError,
   decodeJWT,
@@ -57,7 +58,7 @@ export const updateComments = new lambda.CallbackFunction<
 
     const { ExpressionAttributeNames, ExpressionAttributeValues, UpdateExpression } = updateObject(updateObj);
 
-    const client = new sdk.DynamoDB.DocumentClient();
+    const client = new sdk.DynamoDB.DocumentClient(currentEndpoint);
     try {
       await client
         .update({

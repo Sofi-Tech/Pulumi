@@ -5,7 +5,7 @@ import type { lambdaEvent } from '#utils/util';
 import type { classic } from '@pulumi/awsx';
 
 import { TokenTable, UsersTable } from '#tables/index';
-import { cryptoDecrypt, decodeJWT, jwtVerify } from '#utils/util';
+import { currentEndpoint, cryptoDecrypt, decodeJWT, jwtVerify } from '#utils/util';
 
 export const getToken = (event: classic.apigateway.AuthorizerEvent | lambdaEvent): string => {
   const header = event.headers?.Authorization;
@@ -23,7 +23,7 @@ const authenticate = async (event: classic.apigateway.AuthorizerEvent): Promise<
   if (!id) return 'Deny';
 
   try {
-    const client = new sdk.DynamoDB.DocumentClient();
+    const client = new sdk.DynamoDB.DocumentClient(currentEndpoint);
     const promises = [
       client
         .query({

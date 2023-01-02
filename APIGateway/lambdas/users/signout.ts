@@ -7,6 +7,7 @@ import type { lambdaEvent } from '#utils/util';
 
 import { validateUserBody } from '#tables/validation/users';
 import {
+  currentEndpoint,
   CUSTOM_ERROR_CODES,
   makeCustomError,
   jwtSign,
@@ -38,7 +39,7 @@ export const signout = new lambda.CallbackFunction<
     const { email, password } = parsed as IUser & Pick<CUser, 'email' | 'password'>;
 
     try {
-      const client = new sdk.DynamoDB.DocumentClient();
+      const client = new sdk.DynamoDB.DocumentClient(currentEndpoint);
 
       // Get user from database
       const Item = await client

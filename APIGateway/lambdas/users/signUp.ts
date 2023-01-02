@@ -6,6 +6,7 @@ import type { lambdaEvent } from '#utils/util';
 import { UsersTable } from '#tables/index';
 import { validateUserBody } from '#tables/validation/users';
 import {
+  currentEndpoint,
   CUSTOM_ERROR_CODES,
   makeCustomError,
   STATUS_CODES,
@@ -48,7 +49,7 @@ export const signUp = new lambda.CallbackFunction<
         password: cryptoEncrypt(password),
         token: cryptoEncrypt(token),
       };
-      const client = new sdk.DynamoDB.DocumentClient();
+      const client = new sdk.DynamoDB.DocumentClient(currentEndpoint);
       await client
         .put({
           TableName: UsersTable.get(),

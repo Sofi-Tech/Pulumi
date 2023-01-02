@@ -8,6 +8,7 @@ import type { lambdaEvent } from '#utils/util';
 import { PostsTable } from '#tables/index';
 import { validatePostBody } from '#tables/validation/posts';
 import {
+  currentEndpoint,
   CUSTOM_ERROR_CODES,
   makeCustomError,
   decodeJWT,
@@ -53,7 +54,7 @@ export const createPosts = new lambda.CallbackFunction<
       tags,
     };
 
-    const client = new sdk.DynamoDB.DocumentClient();
+    const client = new sdk.DynamoDB.DocumentClient(currentEndpoint);
     try {
       await client
         .put({

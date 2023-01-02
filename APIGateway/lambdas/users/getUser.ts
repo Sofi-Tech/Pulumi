@@ -4,7 +4,7 @@ import type { IUser } from '#tables/tables/user';
 import type { lambdaEvent } from '#utils/util';
 
 import { UsersTable } from '#tables/index';
-import { CUSTOM_ERROR_CODES, makeCustomError, populateResponse, STATUS_CODES } from '#utils/util';
+import { currentEndpoint, CUSTOM_ERROR_CODES, makeCustomError, populateResponse, STATUS_CODES } from '#utils/util';
 
 export const getUser = new lambda.CallbackFunction<
   lambdaEvent,
@@ -18,7 +18,7 @@ export const getUser = new lambda.CallbackFunction<
     const { userID } = event.pathParameters!;
 
     try {
-      const client = new sdk.DynamoDB.DocumentClient();
+      const client = new sdk.DynamoDB.DocumentClient(currentEndpoint);
       const { Items } = await client
         .query({
           TableName: UsersTable.get(),
@@ -37,6 +37,8 @@ export const getUser = new lambda.CallbackFunction<
       }
 
       const user = Items[0] as IUser;
+      delete user.password;
+      delete user.token;
       return populateResponse(STATUS_CODES.OK, user);
     } catch (error) {
       if ((error as any).code === 'ConditionalCheckFailedException') {
@@ -67,8 +69,8 @@ export const getUserByEmail = new lambda.CallbackFunction<
     const { email } = event.pathParameters!;
 
     try {
-      const client = new sdk.DynamoDB.DocumentClient();
-      const user = await client
+      const client = new sdk.DynamoDB.DocumentClient(currentEndpoint);
+      const { Item: user } = await client
         .get({
           TableName: UsersTable.get(),
           Key: {
@@ -77,6 +79,15 @@ export const getUserByEmail = new lambda.CallbackFunction<
         })
         .promise();
 
+      if (!user) {
+        return populateResponse(
+          STATUS_CODES.INTERNAL_SERVER_ERROR,
+          makeCustomError('User not found', CUSTOM_ERROR_CODES.USER_NOT_FOUND),
+        );
+      }
+
+      delete user.password;
+      delete user.token;
       return populateResponse(STATUS_CODES.OK, user);
     } catch (error) {
       console.error(error);

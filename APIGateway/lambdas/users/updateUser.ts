@@ -8,6 +8,7 @@ import type { lambdaEvent } from '#utils/util';
 
 import { validateUserBody } from '#tables/validation/users';
 import {
+  currentEndpoint,
   CUSTOM_ERROR_CODES,
   makeCustomError,
   updateObject,
@@ -34,7 +35,7 @@ export const updateUser = new lambda.CallbackFunction<
       );
     }
 
-    const client = new sdk.DynamoDB.DocumentClient();
+    const client = new sdk.DynamoDB.DocumentClient(currentEndpoint);
     const { name, password, tags } = parsed as IUser;
     const updateObj = {
       ...(name && { name }),

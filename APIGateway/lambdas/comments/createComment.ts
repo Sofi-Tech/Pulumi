@@ -8,6 +8,7 @@ import type { lambdaEvent } from '#utils/util';
 import { CommentsTable, PostsTable } from '#tables/index';
 import { validateCommentBody } from '#tables/validation/comments';
 import {
+  currentEndpoint,
   decodeJWT,
   generateFlake,
   populateResponse,
@@ -34,7 +35,7 @@ export const createComment = new lambda.CallbackFunction<
       );
 
     const { content, replyTo } = parsed as IComment & Pick<CComment, 'content' | 'replyTo'>;
-    const client = new sdk.DynamoDB.DocumentClient();
+    const client = new sdk.DynamoDB.DocumentClient(currentEndpoint);
 
     const userID = decodeJWT(getToken(event)).data?.id;
 

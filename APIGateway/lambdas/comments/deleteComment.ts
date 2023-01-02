@@ -5,7 +5,14 @@ import { getToken } from '../../auth';
 
 import type { lambdaEvent } from '#utils/util';
 
-import { CUSTOM_ERROR_CODES, makeCustomError, decodeJWT, populateResponse, STATUS_CODES } from '#utils/util';
+import {
+  currentEndpoint,
+  CUSTOM_ERROR_CODES,
+  makeCustomError,
+  decodeJWT,
+  populateResponse,
+  STATUS_CODES,
+} from '#utils/util';
 
 export const deleteComments = new lambda.CallbackFunction<
   lambdaEvent,
@@ -27,7 +34,7 @@ export const deleteComments = new lambda.CallbackFunction<
       );
     }
 
-    const client = new sdk.DynamoDB.DocumentClient();
+    const client = new sdk.DynamoDB.DocumentClient(currentEndpoint);
     try {
       await client
         .delete({
