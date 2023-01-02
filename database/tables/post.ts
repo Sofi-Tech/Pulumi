@@ -30,7 +30,6 @@ export const Posts = new dynamodb.Table('posts', {
 });
 
 export interface IPost {
-  comments?: string[];
   content?: string;
   postID?: string;
   tags?: string[];

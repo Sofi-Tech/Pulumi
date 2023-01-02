@@ -3,7 +3,7 @@ import { lambda, sdk } from '@pulumi/aws';
 import type { lambdaEvent } from '#utils/util';
 
 import { CommentsTable } from '#tables/index';
-import { populateResponse, STATUS_CODES } from '#utils/util';
+import { CUSTOM_ERROR_CODES, makeCustomError, populateResponse, STATUS_CODES } from '#utils/util';
 
 export const getComments = new lambda.CallbackFunction<
   lambdaEvent,
@@ -30,7 +30,12 @@ export const getComments = new lambda.CallbackFunction<
         .then(data => data.Items ?? [])
         .catch(() => []);
 
-      if (!items.length) return populateResponse(STATUS_CODES.NOT_FOUND, 'Post not found');
+      if (!items.length) {
+        return populateResponse(
+          STATUS_CODES.NOT_FOUND,
+          makeCustomError('Post not found', CUSTOM_ERROR_CODES.RESOURCE_NOT_FOUND),
+        );
+      }
 
       const comments = items.filter(item => !item.replyTo);
       const replies = items.filter(item => item.replyTo);
@@ -48,7 +53,10 @@ export const getComments = new lambda.CallbackFunction<
       return populateResponse(STATUS_CODES.OK, commentsWithReplies);
     } catch (error) {
       console.error(error);
-      return populateResponse(STATUS_CODES.INTERNAL_SERVER_ERROR, 'Error getting comments');
+      return populateResponse(
+        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        makeCustomError('Error getting comments', CUSTOM_ERROR_CODES.COMMENT_ERROR),
+      );
     }
   },
 });

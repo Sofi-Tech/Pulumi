@@ -7,7 +7,15 @@ import type { lambdaEvent } from '#utils/util';
 
 import { CommentsTable, PostsTable } from '#tables/index';
 import { validateCommentBody } from '#tables/validation/comments';
-import { decodeJWT, generateFlake, populateResponse, commentEpoch, STATUS_CODES } from '#utils/util';
+import {
+  decodeJWT,
+  generateFlake,
+  populateResponse,
+  commentEpoch,
+  STATUS_CODES,
+  CUSTOM_ERROR_CODES,
+  makeCustomError,
+} from '#utils/util';
 
 export const createComment = new lambda.CallbackFunction<
   lambdaEvent,
@@ -19,13 +27,23 @@ export const createComment = new lambda.CallbackFunction<
   callback: async event => {
     const { postID } = event.pathParameters!;
     const { error, parsed } = validateCommentBody(event, { content: true });
-    if (!parsed || error) return populateResponse(STATUS_CODES.BAD_REQUEST, error ?? 'Bad Request');
+    if (!parsed || error)
+      return populateResponse(
+        STATUS_CODES.BAD_REQUEST,
+        makeCustomError(error ?? 'Bad Request', CUSTOM_ERROR_CODES.BODY_NOT_VALID),
+      );
 
     const { content, replyTo } = parsed as IComment & Pick<CComment, 'content' | 'replyTo'>;
     const client = new sdk.DynamoDB.DocumentClient();
 
     const userID = decodeJWT(getToken(event)).data?.id;
-    if (!userID) return populateResponse(STATUS_CODES.UNAUTHORIZED, 'Unauthorized');
+
+    if (!userID) {
+      return populateResponse(
+        STATUS_CODES.UNAUTHORIZED,
+        makeCustomError('Unauthorized', CUSTOM_ERROR_CODES.USER_NOT_AUTHORIZED),
+      );
+    }
 
     const comment: IComment = {
       commentID: generateFlake(Date.now(), commentEpoch),
@@ -48,7 +66,13 @@ export const createComment = new lambda.CallbackFunction<
           .then(data => data.Items?.[0] ?? null)
           .catch(() => null);
 
-        if (!item) return populateResponse(STATUS_CODES.NOT_FOUND, 'Comment that you want to reply is not found');
+        if (!item) {
+          return populateResponse(
+            STATUS_CODES.NOT_FOUND,
+            makeCustomError('Comment not found', CUSTOM_ERROR_CODES.RESOURCE_NOT_FOUND),
+          );
+        }
+
         comment.replyTo = replyTo;
       }
 
@@ -65,7 +89,12 @@ export const createComment = new lambda.CallbackFunction<
         .then(data => data.Items?.[0] ?? null)
         .catch(() => null);
 
-      if (!item) return populateResponse(STATUS_CODES.NOT_FOUND, 'Post not found');
+      if (!item) {
+        return populateResponse(
+          STATUS_CODES.NOT_FOUND,
+          makeCustomError('Post not found', CUSTOM_ERROR_CODES.RESOURCE_NOT_FOUND),
+        );
+      }
 
       await client
         .put({
@@ -78,7 +107,10 @@ export const createComment = new lambda.CallbackFunction<
       return populateResponse(STATUS_CODES.OK, comment);
     } catch (error) {
       console.error(error);
-      return populateResponse(STATUS_CODES.INTERNAL_SERVER_ERROR, 'Error creating comment');
+      return populateResponse(
+        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        makeCustomError('Error creating comment', CUSTOM_ERROR_CODES.COMMENT_ERROR),
+      );
     }
   },
 });

@@ -1,31 +1,32 @@
 import { lambda, sdk } from '@pulumi/aws';
 
-import { PostsTable } from '../../../database/index';
+import { UsersTable } from '../../../database/index';
 import { getToken } from '../../auth';
 
-import type { CPost, IPost } from '#tables/tables/post';
+import type { IUser } from '#tables/tables/user';
 import type { lambdaEvent } from '#utils/util';
 
-import { validatePostBody } from '#tables/validation/posts';
+import { validateUserBody } from '#tables/validation/users';
 import {
   CUSTOM_ERROR_CODES,
   makeCustomError,
+  updateObject,
   decodeJWT,
   populateResponse,
   STATUS_CODES,
-  updateObject,
 } from '#utils/util';
 
-export const updatePosts = new lambda.CallbackFunction<
+export const updateUser = new lambda.CallbackFunction<
   lambdaEvent,
   {
     body: string;
     statusCode: number;
   }
->('updatePosts', {
+>('updateUser', {
   runtime: lambda.Runtime.NodeJS16dX,
   callback: async event => {
-    const { error, parsed } = validatePostBody(event, { postID: true });
+    const email = decodeJWT(getToken(event)).data?.email;
+    const { parsed, error } = validateUserBody(event, {});
     if (!parsed || error) {
       return populateResponse(
         STATUS_CODES.BAD_REQUEST,
@@ -33,42 +34,31 @@ export const updatePosts = new lambda.CallbackFunction<
       );
     }
 
-    const { postID, title, content, tags } = parsed as IPost & Pick<CPost, 'postID'>;
-    const userID = decodeJWT(getToken(event)).data?.id;
-
-    if (!userID) {
-      return populateResponse(
-        STATUS_CODES.UNAUTHORIZED,
-        makeCustomError('Unauthorized', CUSTOM_ERROR_CODES.USER_NOT_AUTHORIZED),
-      );
-    }
-
+    const client = new sdk.DynamoDB.DocumentClient();
+    const { name, password, tags } = parsed as IUser;
     const updateObj = {
-      ...(title && { title }),
-      ...(content && { content }),
+      ...(name && { name }),
+      ...(password && { password }),
       ...(tags && { tags }),
-      ...(title || content || tags ? { updated: Date.now() } : {}),
+      ...(name || password || tags ? { updated: Date.now() } : {}),
     };
 
     if (!Object.keys(updateObj).length) {
       return populateResponse(
         STATUS_CODES.BAD_REQUEST,
-        makeCustomError('No fields to update', CUSTOM_ERROR_CODES.POST_ERROR),
+        makeCustomError('No fields to update', CUSTOM_ERROR_CODES.USER_ERROR),
       );
     }
 
     const { ExpressionAttributeNames, ExpressionAttributeValues, UpdateExpression } = updateObject(updateObj);
 
-    const client = new sdk.DynamoDB.DocumentClient();
     try {
       await client
         .update({
-          TableName: PostsTable.get(),
+          TableName: UsersTable.get(),
           Key: {
-            userID,
-            postID,
+            email,
           },
-          ConditionExpression: 'attribute_exists(postID)',
           UpdateExpression,
           ExpressionAttributeNames,
           ExpressionAttributeValues,
@@ -83,7 +73,7 @@ export const updatePosts = new lambda.CallbackFunction<
       console.error(error);
       return populateResponse(
         STATUS_CODES.INTERNAL_SERVER_ERROR,
-        makeCustomError('Error updating post', CUSTOM_ERROR_CODES.POST_ERROR),
+        makeCustomError('Internal Server Error', CUSTOM_ERROR_CODES.USER_ERROR),
       );
     }
   },

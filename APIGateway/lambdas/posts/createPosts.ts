@@ -7,7 +7,15 @@ import type { lambdaEvent } from '#utils/util';
 
 import { PostsTable } from '#tables/index';
 import { validatePostBody } from '#tables/validation/posts';
-import { decodeJWT, generateFlake, populateResponse, postEpoch, STATUS_CODES } from '#utils/util';
+import {
+  CUSTOM_ERROR_CODES,
+  makeCustomError,
+  decodeJWT,
+  generateFlake,
+  populateResponse,
+  postEpoch,
+  STATUS_CODES,
+} from '#utils/util';
 
 export const createPosts = new lambda.CallbackFunction<
   lambdaEvent,
@@ -17,12 +25,23 @@ export const createPosts = new lambda.CallbackFunction<
   }
 >('createPosts', {
   callback: async event => {
-    const { error, parsed } = validatePostBody(event, { title: true, content: true });
-    if (!parsed || error) return populateResponse(STATUS_CODES.BAD_REQUEST, error ?? 'Bad Request');
+    const { error, parsed } = validatePostBody(event, { title: true, content: true, tags: true });
+    if (!parsed || error) {
+      return populateResponse(
+        STATUS_CODES.BAD_REQUEST,
+        makeCustomError(error ?? 'Bad Request', CUSTOM_ERROR_CODES.BODY_NOT_VALID),
+      );
+    }
 
-    const { title, content } = parsed as IPost & Pick<CPost, 'content' | 'title'>;
+    const { title, content, tags } = parsed as IPost & Pick<CPost, 'content' | 'tags' | 'title'>;
     const userID = decodeJWT(getToken(event)).data?.id;
-    if (!userID) return populateResponse(STATUS_CODES.UNAUTHORIZED, 'Unauthorized');
+
+    if (!userID) {
+      return populateResponse(
+        STATUS_CODES.UNAUTHORIZED,
+        makeCustomError('Unauthorized', CUSTOM_ERROR_CODES.USER_NOT_AUTHORIZED),
+      );
+    }
 
     const postID = generateFlake(Date.now(), postEpoch);
 
@@ -31,7 +50,7 @@ export const createPosts = new lambda.CallbackFunction<
       title,
       content,
       userID,
-      comments: [],
+      tags,
     };
 
     const client = new sdk.DynamoDB.DocumentClient();
@@ -47,7 +66,10 @@ export const createPosts = new lambda.CallbackFunction<
       return populateResponse(STATUS_CODES.OK, post);
     } catch (error) {
       console.error(error);
-      return populateResponse(STATUS_CODES.INTERNAL_SERVER_ERROR, 'Error creating post');
+      return populateResponse(
+        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        makeCustomError('Error creating post', CUSTOM_ERROR_CODES.POST_ERROR),
+      );
     }
   },
 });

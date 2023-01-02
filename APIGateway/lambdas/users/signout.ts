@@ -1,29 +1,30 @@
 import { lambda, sdk } from '@pulumi/aws';
 
+import { TokenTable, UsersTable } from '../../../database/index';
+
 import type { CUser, IUser } from '#tables/tables/user';
 import type { lambdaEvent } from '#utils/util';
 
-import { TokenTable, UsersTable } from '#tables/index';
 import { validateUserBody } from '#tables/validation/users';
 import {
   CUSTOM_ERROR_CODES,
   makeCustomError,
+  jwtSign,
+  updateObject,
   cryptoDecrypt,
   cryptoEncrypt,
   decodeJWT,
-  STATUS_CODES,
-  jwtSign,
   populateResponse,
-  updateObject,
+  STATUS_CODES,
 } from '#utils/util';
 
-export const signIn = new lambda.CallbackFunction<
+export const signout = new lambda.CallbackFunction<
   lambdaEvent,
   {
     body: string;
     statusCode: number;
   }
->('signIn', {
+>('signout', {
   runtime: lambda.Runtime.NodeJS16dX,
   callback: async event => {
     const { parsed, error } = validateUserBody(event, { email: true, password: true });
@@ -76,39 +77,32 @@ export const signIn = new lambda.CallbackFunction<
           );
         }
 
-        const tItems = [
-          {
-            // update token
-            Update: {
-              TableName: UsersTable.get(),
-              Key: { email },
-              ConditionExpression: 'attribute_exists(email) AND attribute_exists(userID)',
-              ExpressionAttributeNames,
-              ExpressionAttributeValues,
-              UpdateExpression,
-            },
-          },
-          {
-            // blacklist old token
-            Put: {
-              TableName: TokenTable.get(),
-              Item: {
-                token: userDbToken,
-                userID,
-                expires,
-              },
-            },
-          },
-        ];
-
+        // Update token in database
         await client
-          .transactWrite({
-            TransactItems: tItems,
+          .update({
+            TableName: UsersTable.get(),
+            Key: {
+              email,
+            },
+            ExpressionAttributeNames,
+            ExpressionAttributeValues,
+            UpdateExpression,
           })
           .promise();
-        delete user.password;
-        delete user.token;
-        return populateResponse(STATUS_CODES.OK, { ...user, token });
+
+        // Delete token from database
+        await client
+          .put({
+            TableName: TokenTable.get(),
+            Item: {
+              token: userDbToken,
+              userID,
+              expires,
+            },
+          })
+          .promise();
+
+        return populateResponse(STATUS_CODES.OK, 'User signed out');
       }
 
       return populateResponse(

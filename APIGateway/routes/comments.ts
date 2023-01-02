@@ -1,10 +1,8 @@
-import { authLambda } from '../../APIGateway/auth';
-import { createComment, updateComments } from '../lambdas/index';
+import { authLambda } from '../auth';
 
 import type { LambdaAuthorizer, Route } from '@pulumi/awsx/classic/apigateway';
 
-import { deleteComments } from '#lambdas/comments/deleteComment';
-import { getComments } from '#lambdas/comments/getComments';
+import { createComment, updateComments, deleteComments, getComments } from '#lambdas/index';
 
 const authorizers = [
   {
@@ -28,10 +26,7 @@ export const COMMENT_ROUTES: Route[] = [
   {
     path: '/comments/update/{commentID}',
     method: 'PATCH',
-    requiredParameters: [
-      { name: 'postID', in: 'path' },
-      { name: 'commentID', in: 'path' },
-    ],
+    requiredParameters: [{ name: 'commentID', in: 'path' }],
     eventHandler: updateComments,
     authorizers,
   },

@@ -1,33 +1,54 @@
-import { authLambda } from '../../APIGateway/auth';
-import { createPosts, updatePosts } from '../lambdas/index';
+import { authLambda } from '../auth';
 
 import type { LambdaAuthorizer, Route } from '@pulumi/awsx/classic/apigateway';
 
+import { createPosts, deletePost, getPosts, updatePosts, feed, getPost } from '#lambdas/index';
+
+const authorizers = [
+  {
+    authType: 'custom',
+    parameterName: 'Authorization',
+    type: 'request',
+    identitySource: ['method.request.header.Authorization'],
+    handler: authLambda,
+    authorizerResultTtlInSeconds: 0,
+  } as LambdaAuthorizer,
+];
 export const POST_ROUTES: Route[] = [
   {
     path: '/posts/create',
     method: 'POST',
     eventHandler: createPosts,
-    authorizers: [
-      {
-        authType: 'custom',
-        parameterName: 'Authorization',
-        type: 'request',
-        identitySource: ['method.request.header.Authorization'],
-        handler: authLambda,
-        authorizerResultTtlInSeconds: 0,
-      } as LambdaAuthorizer,
-    ],
+    authorizers,
   },
   {
     path: '/posts/update',
     method: 'PATCH',
     eventHandler: updatePosts,
   },
-  // {
-  //   path: '/users/{id}/delete',
-  //   method: 'POST',
-  //   eventHandler: users.deleteUser,
-  // },
-  // { path: '/users', method: 'GET', eventHandler: users.getAllUsers },
+  {
+    path: '/posts/delete/{postID}',
+    method: 'DELETE',
+    requiredParameters: [{ name: 'postID', in: 'path' }],
+    eventHandler: deletePost,
+    authorizers,
+  },
+  {
+    path: '/posts/post/{postID}',
+    method: 'GET',
+    requiredParameters: [{ name: 'postID', in: 'path' }],
+    eventHandler: getPost,
+  },
+  {
+    path: '/posts/{userID}',
+    method: 'GET',
+    requiredParameters: [{ name: 'userID', in: 'path' }],
+    eventHandler: getPosts,
+  },
+  {
+    path: '/posts',
+    method: 'GET',
+    eventHandler: feed,
+    authorizers,
+  },
 ];

@@ -5,10 +5,12 @@ export const validateUserBody = (
     name = false,
     email = false,
     password = false,
+    tags = false,
   }: {
     email?: boolean;
     name?: boolean;
     password?: boolean;
+    tags?: boolean;
     userID?: boolean;
   },
 ) => {
@@ -34,11 +36,17 @@ export const validateUserBody = (
 
     if (!parsed.name && name) return { parsed: null, error: 'Missing name' };
 
-    if (name && !/^[ A-Za-z]+$/.test(parsed.name)) return { parsed: null, error: 'Invalid name' };
-
     if (!parsed.email && email) return { parsed: null, error: 'Missing email' };
 
     if (!parsed.password && password) return { parsed: null, error: 'Missing password' };
+
+    if (!parsed.tags?.[0] && tags) return { parsed: null, error: 'Missing tags' };
+
+    if (tags && !Array.isArray(parsed.tags)) return { parsed: null, error: 'tags should be an array' };
+
+    if (parsed.tags && !parsed.tags.every((tag: string) => typeof tag === 'string')) {
+      return { parsed: null, error: 'tags should be an array of strings' };
+    }
 
     if (
       email &&
@@ -50,6 +58,10 @@ export const validateUserBody = (
       return { parsed: null, error: 'Invalid email' };
     }
 
+    if (name && !/^[ A-Za-z]{2,30}$/.test(parsed.name)) {
+      return { parsed: null, error: 'Name must be between 2 and 30 characters' };
+    }
+
     if (password && !/^(?=.*\d)(?=.*[!#$%&*@^])(?=.*[a-z])(?=.*[A-Z]).{8,}$/.test(parsed.password)) {
       return {
         parsed: null,
@@ -57,6 +69,8 @@ export const validateUserBody = (
           'Password must be min 8 letter password, with at least a symbol, upper and lower case letters and a number',
       };
     }
+
+    if (parsed.tags) parsed.tags = parsed.tags.map((tag: string) => tag.toLowerCase());
 
     return { parsed, error: null };
   } catch {

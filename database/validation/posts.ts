@@ -31,8 +31,6 @@ export const validatePostBody = (
     if (parsed.content && typeof parsed.content !== 'string')
       return { parsed: null, error: 'content should be a string' };
 
-    if (parsed.tags && Array.isArray(tags)) return { parsed: null, error: 'tags should be of array type' };
-
     // value validation
     if (!parsed.postID && postID) return { parsed: null, error: 'Missing postID' };
 
@@ -42,7 +40,15 @@ export const validatePostBody = (
 
     if (!parsed.content && content) return { parsed: null, error: 'Missing content' };
 
-    if (!parsed.tags && tags) return { parsed: null, error: 'Missing tags' };
+    if (!parsed.tags?.[0] && tags) return { parsed: null, error: 'Missing tags' };
+
+    if (tags && !Array.isArray(parsed.tags)) return { parsed: null, error: 'tags should be an array' };
+
+    if (parsed.tags && !parsed.tags.every((tag: string) => typeof tag === 'string')) {
+      return { parsed: null, error: 'tags should be an array of strings' };
+    }
+
+    if (parsed.tags) parsed.tags = parsed.tags.map((tag: string) => tag.toLowerCase());
 
     return { parsed, error: null };
   } catch {

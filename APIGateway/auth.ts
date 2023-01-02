@@ -94,7 +94,8 @@ export const authLambda = new lambda.CallbackFunction<
     let effect = 'Allow';
     try {
       effect = await authenticate(event);
-    } catch {
+    } catch (error) {
+      console.error(error);
       effect = 'Deny';
     }
 

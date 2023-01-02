@@ -5,7 +5,17 @@ import type { lambdaEvent } from '#utils/util';
 
 import { UsersTable } from '#tables/index';
 import { validateUserBody } from '#tables/validation/users';
-import { cryptoEncrypt, generateFlake, userEpoch, jwtSign, populateResponse } from '#utils/util';
+import {
+  CUSTOM_ERROR_CODES,
+  makeCustomError,
+  STATUS_CODES,
+  pascalCase,
+  cryptoEncrypt,
+  generateFlake,
+  userEpoch,
+  jwtSign,
+  populateResponse,
+} from '#utils/util';
 
 export const signUp = new lambda.CallbackFunction<
   lambdaEvent,
@@ -16,15 +26,23 @@ export const signUp = new lambda.CallbackFunction<
 >('signUp', {
   runtime: lambda.Runtime.NodeJS16dX,
   callback: async event => {
-    const { error, parsed } = validateUserBody(event, { email: true, password: true, name: true });
+    const { error, parsed } = validateUserBody(event, { email: true, password: true, name: true, tags: true });
 
-    if (!parsed || error) return populateResponse(400, error ?? 'Bad Request');
-    const { email, password } = parsed as CUser;
+    if (!parsed || error) {
+      return populateResponse(
+        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        makeCustomError(error ?? 'Bad Request', CUSTOM_ERROR_CODES.BODY_NOT_VALID),
+      );
+    }
+
+    const { email, password, name, tags } = parsed as IUser & Pick<CUser, 'email' | 'name' | 'password' | 'tags'>;
     const id = generateFlake(Date.now(), userEpoch);
 
     try {
-      const token = jwtSign(id);
+      const token = jwtSign(id, email);
       const user: IUser = {
+        name: pascalCase(name),
+        tags,
         userID: id,
         email,
         password: cryptoEncrypt(password),
@@ -40,13 +58,21 @@ export const signUp = new lambda.CallbackFunction<
         .promise();
 
       delete user.token;
-      return populateResponse(200, { ...user, token });
+      delete user.password;
+      return populateResponse(STATUS_CODES.OK, { ...user, token });
     } catch (error) {
-      if ((error as any).code === 'ConditionalCheckFailedException')
-        return populateResponse(400, 'User with that email already exists');
+      if ((error as any).code === 'ConditionalCheckFailedException') {
+        return populateResponse(
+          STATUS_CODES.INTERNAL_SERVER_ERROR,
+          makeCustomError('User with that email already exists', CUSTOM_ERROR_CODES.USER_ALREADY_EXISTS),
+        );
+      }
 
       console.error(error);
-      return populateResponse(500, 'Internal Server Error');
+      return populateResponse(
+        STATUS_CODES.INTERNAL_SERVER_ERROR,
+        makeCustomError('Internal Server Error', CUSTOM_ERROR_CODES.USER_ERROR),
+      );
     }
   },
 });

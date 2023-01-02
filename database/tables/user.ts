@@ -33,7 +33,9 @@ export const Users = new dynamodb.Table('users', {
 
 export interface IUser {
   email?: string;
+  name?: string;
   password?: string;
+  tags?: string[];
   token?: string;
   userID?: string;
 }

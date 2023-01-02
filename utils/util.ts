@@ -21,13 +21,13 @@ export const cryptoDecrypt = (key: string) => {
   return bytes.toString(enc.Utf8);
 };
 
-export const jwtSign = (id: string) =>
-  sign({ id }, signingKey, {
+export const jwtSign = (id: string, email: string) =>
+  sign({ id, email }, signingKey, {
     expiresIn: '30d', // expires in 30 days
   });
 
 export const decodeJWT = (token: string) => {
-  const decoded = decode(token) as { exp: number; iat: number; id: string } | null;
+  const decoded = decode(token) as { email: string; exp: number; iat: number; id: string } | null;
   return {
     data: decoded,
     success: Boolean(decoded),
@@ -128,12 +128,24 @@ export enum CUSTOM_ERROR_CODES {
   USER_NOT_FOUND = 1_000,
   USER_ALREADY_EXISTS,
   USER_NOT_AUTHORIZED,
+  BODY_NOT_VALID,
+  RESOURCE_NOT_FOUND,
+
+  COMMENT_ERROR = 2_000,
+  POST_ERROR,
+  USER_ERROR,
 }
 
 export const makeCustomError = (message: string, code: CUSTOM_ERROR_CODES) => {
   const error = new Error(message);
-  error.name = code.toString();
+  error.name = message;
+  (error as any).code = code;
   return error;
+};
+
+export const pascalCase = (str: string) => {
+  const words = str.split(' ');
+  return words.map(word => word[0].toUpperCase() + word.slice(1).toLowerCase()).join(' ');
 };
 
 export type lambdaEvent = Omit<
