@@ -79,6 +79,7 @@ export const signIn = new lambda.CallbackFunction<
 
       if (
         cryptoDecrypt(hashedPassword) === password ||
+        // since I didn't store hashed password in development
         (process.env.NODE_ENV === 'development' && hashedPassword === password)
       ) {
         // sign token
