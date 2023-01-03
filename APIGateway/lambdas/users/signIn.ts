@@ -21,6 +21,14 @@ import {
   updateObject,
 } from '#utils/util';
 
+/**
+ * The signIn lambda
+ * @description
+ * - The lambda is used to sign in a user
+ * - The lambda is triggered by a POST request to /users/signIn
+ *
+ * @see https://www.pulumi.com/docs/guides/crosswalk/aws/api-gateway/#lambda-request-handling
+ */
 export const signIn = new lambda.CallbackFunction<
   lambdaEvent,
   {
@@ -68,8 +76,6 @@ export const signIn = new lambda.CallbackFunction<
       }
 
       const { password: hashedPassword, userID, token: hashedToken } = user as CUser;
-
-      console.log(process.env.NODE_ENV, 'here');
 
       if (
         cryptoDecrypt(hashedPassword) === password ||

@@ -56,6 +56,11 @@ export const decodeJWT = (token: string) => {
   };
 };
 
+/**
+ * Verifies a JWT token with a signing key
+ * @param token - The JWT token to verify
+ * @returns  The verified JWT token
+ */
 export const jwtVerify = (token: string) => {
   try {
     return {
@@ -67,6 +72,12 @@ export const jwtVerify = (token: string) => {
   }
 };
 
+/**
+ * Generates a flake which is a 64 bit integer and is unique
+ * @param timestamp  - The timestamp to generate the flake from
+ * @param EPOCH - The epoch to generate the flake from
+ * @returns
+ */
 export const generateFlake = (timestamp: Date | number, EPOCH: number) => {
   if (timestamp instanceof Date) timestamp = timestamp.getTime();
   if (typeof timestamp !== 'number' || Number.isNaN(timestamp)) {
@@ -81,6 +92,12 @@ export const generateFlake = (timestamp: Date | number, EPOCH: number) => {
   return ((BigInt(timestamp - EPOCH) << 22n) | (1n << 17n) | INCREMENT++).toString();
 };
 
+/**
+ * Deconstructs a snowflake into its components
+ * @param snowflake - The snowflake to deconstruct
+ * @param EPOCH - The epoch to deconstruct the snowflake from
+ * @returns
+ */
 export const deconstruct = (snowflake: string, EPOCH: number) => {
   const bigIntSnowflake = BigInt(snowflake);
   return {
@@ -95,6 +112,11 @@ export const deconstruct = (snowflake: string, EPOCH: number) => {
   };
 };
 
+/**
+ * Generates the UpdateExpression, ExpressionAttributeNames and ExpressionAttributeValues for a DynamoDB update
+ * @param patchObject - The object to update
+ * @returns The UpdateExpression, ExpressionAttributeNames and ExpressionAttributeValues
+ */
 export const updateObject = (patchObject: object) => {
   let UpdateExpression = '';
   const ExpressionAttributeNames: Record<string, string> = {};
@@ -123,6 +145,9 @@ export const populateResponse = (statusCode: STATUS_CODES, body: object | string
   body: JSON.stringify(typeof body === 'string' ? { message: body } : body),
 });
 
+/**
+ * @param statusCode - HTTP status code
+ */
 export enum STATUS_CODES {
   OK = 200,
   CREATED,
@@ -146,6 +171,9 @@ export enum STATUS_CODES {
   GATEWAY_TIMEOUT,
 }
 
+/**
+ * @param code - Custom error code
+ */
 export enum CUSTOM_ERROR_CODES {
   USER_NOT_FOUND = 1_000,
   USER_ALREADY_EXISTS,
@@ -158,6 +186,12 @@ export enum CUSTOM_ERROR_CODES {
   USER_ERROR,
 }
 
+/**
+ * Creates a custom error for blog API
+ * @param message  - The error message
+ * @param code - The error code
+ * @returns
+ */
 export const makeCustomError = (message: string, code: CUSTOM_ERROR_CODES) => {
   const error = new Error(message);
   error.name = message;
@@ -165,25 +199,47 @@ export const makeCustomError = (message: string, code: CUSTOM_ERROR_CODES) => {
   return error;
 };
 
+/**
+ * Converts a string to pascal case
+ * @param str - The string to convert to pascal case
+ * @returns The string in pascal case
+ */
 export const pascalCase = (str: string) => {
   const words = str.split(' ');
   return words.map(word => word[0].toUpperCase() + word.slice(1).toLowerCase()).join(' ');
 };
 
+/**
+ * Custom lambdaEvent which can be used with lambda function callback
+ */
 export type lambdaEvent = Omit<
   classic.apigateway.AuthorizerEvent,
   'apiId' | 'authorizationToken' | 'domainName' | 'methodArn' | 'type'
 >;
 
+/**
+ * The post epoch, can be set with any date
+ */
 export const postEpoch = 1_609_459_200_000;
-export const userEpoch = 1_609_459_200_000;
+
+/**
+ * The user epoch, can be set with any date
+ */
+export const userEpoch = 1_609_500_200_000;
+
+/**
+ * The comment epoch, can be set with any date
+ */
 export const commentEpoch = 1_609_459_200_000;
 
+/**
+ * The custom endpoint for DynamoDB
+ */
 export const currentEndpoint =
   process.env.NODE_ENV === 'production'
     ? undefined
     : {
-        endpoint: 'http://78.46.102.232:8000',
+        endpoint: process.env.dbEndPoint!,
         region: 'ap-south-1',
         credentials: {
           accessKeyId: 'fakekeyid',

@@ -1,11 +1,11 @@
 import { lambda, sdk } from '@pulumi/aws';
 
-import { PostsTable } from '../../../database/index';
 import { getToken } from '../../auth';
 
 import type { CPost, IPost } from '#tables/tables/post';
 import type { lambdaEvent } from '#utils/util';
 
+import { PostsTable } from '#tables/index';
 import { validatePostBody } from '#tables/validation/posts';
 import {
   currentEndpoint,
@@ -17,6 +17,14 @@ import {
   updateObject,
 } from '#utils/util';
 
+/**
+ * The update post lambda
+ * @description
+ * - The lambda is used to update a post
+ * - The lambda is triggered by a POST request to /posts/update
+ *
+ * @see https://www.pulumi.com/docs/guides/crosswalk/aws/api-gateway/#lambda-request-handling
+ */
 export const updatePosts = new lambda.CallbackFunction<
   lambdaEvent,
   {
@@ -26,7 +34,7 @@ export const updatePosts = new lambda.CallbackFunction<
 >('updatePosts', {
   runtime: lambda.Runtime.NodeJS16dX,
   callback: async event => {
-    const { error, parsed } = validatePostBody(event, { postID: true });
+    const { error, parsed } = validatePostBody(event, {});
     if (!parsed || error) {
       return populateResponse(
         STATUS_CODES.BAD_REQUEST,
@@ -34,7 +42,9 @@ export const updatePosts = new lambda.CallbackFunction<
       );
     }
 
-    const { postID, title, content, tags } = parsed as IPost & Pick<CPost, 'postID'>;
+    const { postID } = event.pathParameters!;
+
+    const { title, content, tags } = parsed as IPost & Pick<CPost, 'postID'>;
     const userID = decodeJWT(getToken(event)).data?.id;
 
     if (!userID) {
@@ -82,6 +92,13 @@ export const updatePosts = new lambda.CallbackFunction<
       });
     } catch (error) {
       console.error(error);
+      if ((error as any).code === 'ConditionalCheckFailedException') {
+        return populateResponse(
+          STATUS_CODES.NOT_FOUND,
+          makeCustomError('You cannot update this post', CUSTOM_ERROR_CODES.USER_NOT_AUTHORIZED),
+        );
+      }
+
       return populateResponse(
         STATUS_CODES.INTERNAL_SERVER_ERROR,
         makeCustomError('Error updating post', CUSTOM_ERROR_CODES.POST_ERROR),

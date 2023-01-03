@@ -5,7 +5,7 @@ import { getToken } from '../../auth';
 import type { CPost, IPost } from '#tables/tables/post';
 import type { lambdaEvent } from '#utils/util';
 
-import { PostsTable } from '#tables/index';
+import { PostsTable, TagsTable } from '#tables/index';
 import { validatePostBody } from '#tables/validation/posts';
 import {
   currentEndpoint,
@@ -18,6 +18,14 @@ import {
   STATUS_CODES,
 } from '#utils/util';
 
+/**
+ * The create post lambda
+ * @description
+ * - The lambda is used to create a post
+ * - The lambda is triggered by a POST request to /posts/create
+ *
+ * @see https://www.pulumi.com/docs/guides/crosswalk/aws/api-gateway/#lambda-request-handling
+ */
 export const createPosts = new lambda.CallbackFunction<
   lambdaEvent,
   {
@@ -51,11 +59,27 @@ export const createPosts = new lambda.CallbackFunction<
       title,
       content,
       userID,
-      tags,
     };
 
     const client = new sdk.DynamoDB.DocumentClient(currentEndpoint);
     try {
+      // store all the tags in the tags table with client transaction
+      const tagsToStore = tags.map((tag: string) => ({
+        Put: {
+          TableName: TagsTable.get(),
+          Item: {
+            postID,
+            tag,
+          },
+        },
+      }));
+
+      await client
+        .transactWrite({
+          TransactItems: tagsToStore,
+        })
+        .promise();
+
       await client
         .put({
           TableName: PostsTable.get(),

@@ -1,3 +1,13 @@
+import { commentSchema } from '#tables/tables/comment';
+
+/**
+ * Validate the body of the comment request
+ * We have out own validating function because current pulumi does not support any validation package
+ *
+ * @param event The customLambdaEvent object from the lambda function handler
+ * @param param1 Object containing the required fields
+ * @returns parsed body and error if any
+ */
 export const validateCommentBody = (
   event: any,
   {
@@ -20,6 +30,9 @@ export const validateCommentBody = (
     const parsed = JSON.parse(body);
 
     if (!parsed) return { parsed: null, error: 'Missing body' };
+
+    const unknownFields = Object.keys(parsed).filter(key => !Object.keys(commentSchema).includes(key));
+    if (unknownFields.length) return { parsed: null, error: `Unknown fields: ${unknownFields.join(', ')}` };
 
     // type validation
     if (parsed.commentID && typeof parsed.commentID !== 'string')
@@ -50,6 +63,6 @@ export const validateCommentBody = (
 
     return { parsed, error: null };
   } catch {
-    return { parsed: null, error: 'Invalid body' };
+    return { parsed: null, error: 'Something went wrong while validating the body, Check if its a valid object' };
   }
 };

@@ -18,6 +18,14 @@ import {
   populateResponse,
 } from '#utils/util';
 
+/**
+ * The signout lambda
+ * @description
+ * - The lambda is used to sign out a user
+ * - The lambda is triggered by a POST request to /users/signout
+ *
+ * @see https://www.pulumi.com/docs/guides/crosswalk/aws/api-gateway/#lambda-request-handling
+ */
 export const signUp = new lambda.CallbackFunction<
   lambdaEvent,
   {

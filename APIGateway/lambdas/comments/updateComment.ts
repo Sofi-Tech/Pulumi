@@ -1,11 +1,11 @@
 import { lambda, sdk } from '@pulumi/aws';
 
-import { CommentsTable } from '../../../database/index';
 import { getToken } from '../../auth';
 
 import type { CComment, IComment } from '#tables/tables/comment';
 import type { lambdaEvent } from '#utils/util';
 
+import { CommentsTable } from '#tables/index';
 import { validateCommentBody } from '#tables/validation/comments';
 import {
   currentEndpoint,
@@ -17,6 +17,14 @@ import {
   updateObject,
 } from '#utils/util';
 
+/**
+ * The update comment lambda
+ * @description
+ * - The lambda is used to update a comment
+ * - The lambda is triggered by a PATCH request to /comments/update/{commentID}
+ *
+ * @see https://www.pulumi.com/docs/guides/crosswalk/aws/api-gateway/#lambda-request-handling
+ */
 export const updateComments = new lambda.CallbackFunction<
   lambdaEvent,
   {
@@ -79,11 +87,12 @@ export const updateComments = new lambda.CallbackFunction<
         },
       });
     } catch (error) {
-      if ((error as any).code === 'ConditionalCheckFailedException')
+      if ((error as any).code === 'ConditionalCheckFailedException') {
         return populateResponse(
           STATUS_CODES.NOT_FOUND,
           makeCustomError('Comment not found', CUSTOM_ERROR_CODES.RESOURCE_NOT_FOUND),
         );
+      }
 
       console.error(error);
       return populateResponse(

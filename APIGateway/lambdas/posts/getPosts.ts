@@ -2,12 +2,19 @@
 
 import { lambda, sdk } from '@pulumi/aws';
 
-import { PostsTable } from '../../../database/index';
-
 import type { lambdaEvent } from '#utils/util';
 
+import { PostsTable } from '#tables/index';
 import { currentEndpoint, CUSTOM_ERROR_CODES, makeCustomError, populateResponse, STATUS_CODES } from '#utils/util';
 
+/**
+ * Get all posts
+ * @description
+ * - The posts are retrieved from the database
+ * - The lambda is triggered by a GET request to /posts/{userID}
+ *
+ * @see https://www.pulumi.com/docs/guides/crosswalk/aws/api-gateway/#lambda-request-handling
+ */
 export const getPosts = new lambda.CallbackFunction<
   lambdaEvent,
   {

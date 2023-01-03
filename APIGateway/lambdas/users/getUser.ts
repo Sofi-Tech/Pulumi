@@ -6,6 +6,14 @@ import type { lambdaEvent } from '#utils/util';
 import { UsersTable } from '#tables/index';
 import { currentEndpoint, CUSTOM_ERROR_CODES, makeCustomError, populateResponse, STATUS_CODES } from '#utils/util';
 
+/**
+ * The getUser lambda
+ * @description
+ * - The lambda is used to get a user by their userID
+ * - The lambda is triggered by a GET request to /users/{userID}
+ *
+ * @see https://www.pulumi.com/docs/guides/crosswalk/aws/api-gateway/#lambda-request-handling
+ */
 export const getUser = new lambda.CallbackFunction<
   lambdaEvent,
   {
@@ -57,6 +65,14 @@ export const getUser = new lambda.CallbackFunction<
   },
 });
 
+/**
+ * The getUserByEmail lambda
+ * @description
+ * - The lambda is used to get a user by their email
+ * - The lambda is triggered by a GET request to /users/email/{email}
+ *
+ * @see https://www.pulumi.com/docs/guides/crosswalk/aws/api-gateway/#lambda-request-handling
+ */
 export const getUserByEmail = new lambda.CallbackFunction<
   lambdaEvent,
   {

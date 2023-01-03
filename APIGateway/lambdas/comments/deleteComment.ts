@@ -1,10 +1,10 @@
 import { lambda, sdk } from '@pulumi/aws';
 
-import { CommentsTable } from '../../../database/index';
 import { getToken } from '../../auth';
 
 import type { lambdaEvent } from '#utils/util';
 
+import { CommentsTable } from '#tables/index';
 import {
   currentEndpoint,
   CUSTOM_ERROR_CODES,
@@ -14,6 +14,14 @@ import {
   STATUS_CODES,
 } from '#utils/util';
 
+/**
+ * Delete a comment from the database
+ * @description
+ * - The comment is deleted from the database
+ * - The lambda is triggered by a DELETE request to /comments/delete/{commentID}
+ *
+ * @see https://www.pulumi.com/docs/guides/crosswalk/aws/api-gateway/#lambda-request-handling
+ */
 export const deleteComments = new lambda.CallbackFunction<
   lambdaEvent,
   {
@@ -49,11 +57,12 @@ export const deleteComments = new lambda.CallbackFunction<
 
       return populateResponse(STATUS_CODES.OK, 'Comment deleted');
     } catch (error) {
-      if ((error as any).code === 'ConditionalCheckFailedException')
+      if ((error as any).code === 'ConditionalCheckFailedException') {
         return populateResponse(
           STATUS_CODES.NOT_FOUND,
           makeCustomError('You cannot delete this comment', CUSTOM_ERROR_CODES.USER_NOT_AUTHORIZED),
         );
+      }
 
       console.error(error);
       return populateResponse(

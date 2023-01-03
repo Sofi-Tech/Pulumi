@@ -1,8 +1,21 @@
-// table to have have blacklisted tokens until they expire
-
 import { Table } from '@pulumi/aws/dynamodb';
 
-// this is used for the logout functionality
+/**
+ * Token table for storing user tokens
+ * @description
+ * - userID: user id
+ * - token: token
+ * - expires: token expiration time
+ * @example {
+ * userID: 'some'
+ * token: 'token',
+ * expires: 123456789
+ * }
+ *
+ * @see https://www.pulumi.com/docs/reference/pkg/aws/dynamodb/table/
+ * @see https://www.pulumi.com/docs/reference/pkg/aws/dynamodb/table/#globalsecondaryindexes
+ * @see https://www.pulumi.com/docs/reference/pkg/aws/dynamodb/table/#ttl
+ */
 export const Token = new Table('token', {
   name: 'tokens',
   attributes: [
@@ -52,5 +65,10 @@ export interface IToken {
   token?: string;
   userID?: string;
 }
+
+export const tokenSchema = {
+  token: '',
+  userID: '',
+};
 
 export type CToken = Required<IToken>;

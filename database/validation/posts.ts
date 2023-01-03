@@ -1,3 +1,13 @@
+import { postSchema } from '#tables/tables/post';
+
+/**
+ * Validate the post body
+ * We have out own validating function because current pulumi does not support any validation package
+ *
+ * @param event The customLambdaEvent object from the lambda function handler
+ * @param param1 Object containing the required fields
+ * @returns
+ */
 export const validatePostBody = (
   event: any,
   {
@@ -20,6 +30,9 @@ export const validatePostBody = (
     const parsed = JSON.parse(body);
 
     if (!parsed) return { parsed: null, error: 'Missing body' };
+
+    const unknownFields = Object.keys(parsed).filter(key => !Object.keys(postSchema).includes(key));
+    if (unknownFields.length) return { parsed: null, error: `Unknown fields: ${unknownFields.join(', ')}` };
 
     // type validation
     if (parsed.postID && typeof parsed.postID !== 'string') return { parsed: null, error: 'postID should be a string' };
@@ -48,10 +61,16 @@ export const validatePostBody = (
       return { parsed: null, error: 'tags should be an array of strings' };
     }
 
+    if (tags && parsed.tags?.length > 5) return { parsed: null, error: 'only 5 tags allowed at max' };
+
+    if (parsed.tags && !parsed.tags.every((tag: string) => tag.length > 2)) {
+      return { parsed: null, error: 'tags should be greater than 2 characters' };
+    }
+
     if (parsed.tags) parsed.tags = parsed.tags.map((tag: string) => tag.toLowerCase());
 
     return { parsed, error: null };
   } catch {
-    return { parsed: null, error: 'Invalid body' };
+    return { parsed: null, error: 'Something went wrong while validating the body, Check if its a valid object' };
   }
 };

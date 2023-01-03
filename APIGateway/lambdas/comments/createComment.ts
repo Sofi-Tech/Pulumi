@@ -18,6 +18,16 @@ import {
   makeCustomError,
 } from '#utils/util';
 
+/**
+ * The create comment lambda
+ * @description
+ * - The lambda is used to create a comment
+ * - The lambda is triggered by a POST request to /comments/create/{postID}
+ *
+ * replyTo is optional and is used to reply to a comment
+ *
+ * @see https://www.pulumi.com/docs/guides/crosswalk/aws/api-gateway/#lambda-request-handling
+ */
 export const createComment = new lambda.CallbackFunction<
   lambdaEvent,
   {

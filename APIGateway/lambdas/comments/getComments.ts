@@ -5,6 +5,14 @@ import type { lambdaEvent } from '#utils/util';
 import { CommentsTable } from '#tables/index';
 import { currentEndpoint, CUSTOM_ERROR_CODES, makeCustomError, populateResponse, STATUS_CODES } from '#utils/util';
 
+/**
+ * Get all the comments for a post
+ * @description
+ * - The lambda is used to get all the comments for a post
+ * - The lambda is triggered by a GET request to /comments/{postID}
+ *
+ * @see https://www.pulumi.com/docs/guides/crosswalk/aws/api-gateway/#lambda-request-handling
+ */
 export const getComments = new lambda.CallbackFunction<
   lambdaEvent,
   {

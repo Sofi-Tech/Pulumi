@@ -1,11 +1,17 @@
 import { authLambda } from '../auth';
 
-import type * as awsx from '@pulumi/awsx';
-import type { LambdaAuthorizer } from '@pulumi/awsx/classic/apigateway';
+import type { LambdaAuthorizer, Route } from '@pulumi/awsx/classic/apigateway';
 
 import { signUp, signIn, signout, getUser, getUserByEmail, updateUser } from '#lambdas/index';
 
-const authorizers = [
+/**
+ * The authorizers for the comments routes
+ * @description
+ * - The authorizers are used to authorize requests to the lambda functions
+ *
+ * @see https://www.pulumi.com/registry/packages/aws-apigateway/api-docs/restapi/#authorizer
+ */
+export const authorizers = [
   {
     authType: 'custom',
     parameterName: 'Authorization',
@@ -15,7 +21,15 @@ const authorizers = [
     authorizerResultTtlInSeconds: 0,
   } as LambdaAuthorizer,
 ];
-export const USER_ROUTES: awsx.classic.apigateway.Route[] = [
+
+/**
+ * The routes for the users
+ * @description
+ * - The routes are used to route requests to the lambda functions
+ *
+ * @see https://www.pulumi.com/registry/packages/aws-apigateway/api-docs/restapi/#route
+ */
+export const USER_ROUTES: Route[] = [
   {
     path: '/users/signup',
     method: 'POST',

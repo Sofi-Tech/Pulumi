@@ -1,5 +1,15 @@
 import process from 'node:process';
 
+import { userSchema } from '#tables/tables/user';
+
+/**
+ * Validates the body of a user request
+ * We have out own validating function because current pulumi does not support any validation package
+ *
+ * @param event The customLambdaEvent object from the lambda function handler
+ * @param param1 Object containing the required fields
+ * @returns parsed body and error if any
+ */
 export const validateUserBody = (
   event: any,
   {
@@ -22,6 +32,9 @@ export const validateUserBody = (
     const parsed = JSON.parse(body);
 
     if (!parsed) return { parsed: null, error: 'Missing body' };
+
+    const unknownFields = Object.keys(parsed).filter(key => !Object.keys(userSchema).includes(key));
+    if (unknownFields.length) return { parsed: null, error: `Unknown fields: ${unknownFields.join(', ')}` };
 
     // type validation
     if (parsed.userID && typeof parsed.userID !== 'string') return { parsed: null, error: 'userID should be a string' };
@@ -50,6 +63,12 @@ export const validateUserBody = (
       return { parsed: null, error: 'tags should be an array of strings' };
     }
 
+    if (parsed.tags && !parsed.tags.every((tag: string) => tag.length > 2)) {
+      return { parsed: null, error: 'tags should be greater than 2 characters' };
+    }
+
+    if (tags && parsed.tags?.length > 5) return { parsed: null, error: 'only 5 tags allowed at max' };
+
     if (
       email &&
       // eslint-disable-next-line prefer-named-capture-group, unicorn/no-unsafe-regex
@@ -64,7 +83,6 @@ export const validateUserBody = (
       return { parsed: null, error: 'Name must be between 2 and 30 characters' };
     }
 
-    console.log(process.env.NODE_ENV);
     if (
       password &&
       !/^(?=.*\d)(?=.*[!#$%&*@^])(?=.*[a-z])(?=.*[A-Z]).{8,}$/.test(parsed.password) &&
@@ -80,7 +98,8 @@ export const validateUserBody = (
     if (parsed.tags) parsed.tags = parsed.tags.map((tag: string) => tag.toLowerCase());
 
     return { parsed, error: null };
-  } catch {
-    return { parsed: null, error: 'Invalid body' };
+  } catch (error) {
+    console.error(error);
+    return { parsed: null, error: 'Something went wrong while validating the body, Check if its a valid object' };
   }
 };

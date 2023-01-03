@@ -1,11 +1,11 @@
 import { lambda, sdk } from '@pulumi/aws';
 
-import { UsersTable } from '../../../database/index';
 import { getToken } from '../../auth';
 
 import type { IUser } from '#tables/tables/user';
 import type { lambdaEvent } from '#utils/util';
 
+import { UsersTable } from '#tables/index';
 import { validateUserBody } from '#tables/validation/users';
 import {
   currentEndpoint,
@@ -17,6 +17,14 @@ import {
   STATUS_CODES,
 } from '#utils/util';
 
+/**
+ * The updateUser lambda
+ * @description
+ * - The lambda is used to update a user
+ * - The lambda is triggered by a PATCH request to /users/update/{userID}
+ *
+ * @see https://www.pulumi.com/docs/guides/crosswalk/aws/api-gateway/#lambda-request-handling
+ */
 export const updateUser = new lambda.CallbackFunction<
   lambdaEvent,
   {

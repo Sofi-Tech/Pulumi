@@ -7,12 +7,22 @@ import type { classic } from '@pulumi/awsx';
 import { TokenTable, UsersTable } from '#tables/index';
 import { currentEndpoint, cryptoDecrypt, decodeJWT, jwtVerify } from '#utils/util';
 
+/**
+ * Extract the bearer token from the event
+ * @param event The event from the lambda
+ * @returns The token
+ */
 export const getToken = (event: classic.apigateway.AuthorizerEvent | lambdaEvent): string => {
   const header = event.headers?.Authorization;
   if (header && header.split(' ')[0] === 'Bearer') return header.split(' ')[1];
   return '';
 };
 
+/**
+ * Authenticate the user
+ * @param event The event from the lambda
+ * @returns The effect of the policy
+ */
 const authenticate = async (event: classic.apigateway.AuthorizerEvent): Promise<string> => {
   const token = getToken(event);
   const decoded = decodeJWT(token);
@@ -76,6 +86,13 @@ const authenticate = async (event: classic.apigateway.AuthorizerEvent): Promise<
   }
 };
 
+/**
+ * The authorizer lambda function for API Gateway to authenticate the user before allowing access to the API
+ * @param event The event from the lambda
+ * @returns The policy document
+ * @see https://docs.aws.amazon.com/apigateway/latest/developerguide/apigateway-use-lambda-authorizer.html
+ * @see https://docs.aws.amazon.com/apigateway/latest/developerguide/api-gateway-lambda-authorizer-output.html
+ */
 export const authLambda = new lambda.CallbackFunction<
   classic.apigateway.AuthorizerEvent,
   {

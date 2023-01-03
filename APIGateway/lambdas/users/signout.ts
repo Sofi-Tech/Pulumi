@@ -1,10 +1,9 @@
 import { lambda, sdk } from '@pulumi/aws';
 
-import { TokenTable, UsersTable } from '../../../database/index';
-
 import type { CUser, IUser } from '#tables/tables/user';
 import type { lambdaEvent } from '#utils/util';
 
+import { TokenTable, UsersTable } from '#tables/index';
 import { validateUserBody } from '#tables/validation/users';
 import {
   currentEndpoint,
@@ -19,6 +18,14 @@ import {
   STATUS_CODES,
 } from '#utils/util';
 
+/**
+ * The signout lambda
+ * @description
+ * - The lambda is used to sign out a user
+ * - The lambda is triggered by a POST request to /users/signout
+ *
+ * @see https://www.pulumi.com/docs/guides/crosswalk/aws/api-gateway/#lambda-request-handling
+ */
 export const signout = new lambda.CallbackFunction<
   lambdaEvent,
   {

@@ -1,11 +1,11 @@
 // delete post code here
 import { lambda, sdk } from '@pulumi/aws';
 
-import { PostsTable } from '../../../database/index';
 import { getToken } from '../../auth';
 
 import type { lambdaEvent } from '#utils/util';
 
+import { PostsTable } from '#tables/index';
 import {
   currentEndpoint,
   CUSTOM_ERROR_CODES,
@@ -15,6 +15,14 @@ import {
   STATUS_CODES,
 } from '#utils/util';
 
+/**
+ * Delete a post
+ * @description
+ * - The post is deleted from the database
+ * - The lambda is triggered by a DELETE request to /posts/delete/{postID}
+ *
+ * @see https://www.pulumi.com/docs/guides/crosswalk/aws/api-gateway/#lambda-request-handling
+ */
 export const deletePost = new lambda.CallbackFunction<
   lambdaEvent,
   {
@@ -48,11 +56,12 @@ export const deletePost = new lambda.CallbackFunction<
         .promise();
       return populateResponse(STATUS_CODES.OK, 'Post deleted');
     } catch (error) {
-      if ((error as any).code === 'ConditionalCheckFailedException')
+      if ((error as any).code === 'ConditionalCheckFailedException') {
         return populateResponse(
           STATUS_CODES.NOT_FOUND,
           makeCustomError('You cannot delete this post', CUSTOM_ERROR_CODES.RESOURCE_NOT_FOUND),
         );
+      }
 
       console.error(error);
       return populateResponse(
