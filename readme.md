@@ -114,3 +114,11 @@ The total resources created by the stack are **220**. The resources are divided 
 - Functions - **33**
 - Tables - **5**
 - Identity - **176**
+
+<details> 
+  <summary><b>📈 Performance</b></summary>
+</details>
+
+# Todo:
+
+- [ ] Write tests using vitest

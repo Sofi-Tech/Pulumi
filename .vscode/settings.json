@@ -1,5 +1,5 @@
 {
-  "cSpell.words": ["awsx", "jwks", "pulumi", "signin", "signout"],
+  "cSpell.words": ["awsx", "jwks", "pulumi", "signin", "signout", "signup"],
   "editor.formatOnSave": true,
   "editor.codeActionsOnSave": {
     "source.fixAll.eslint": true
