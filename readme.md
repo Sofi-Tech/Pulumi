@@ -79,7 +79,7 @@ pulumi login
 6. Deploy the stack
 
 ```bash
-yarn pushWithRefresh
+yarn push
 ```
 
 **Note**: If you are prompted with passphrases, you can use the following command to avoid the prompt This will remember the passphrase for the entire cli session
