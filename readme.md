@@ -32,6 +32,10 @@ database --> tables
 database --> validation
 ```
 
+The Entry point of the API
+
+- [APIGateway](./APIGateway) - Contains the code for the API Gateway
+
 The API can be divided into three parts:
 
 - [Users APIs](./APIGateway/lambdas/users/)
