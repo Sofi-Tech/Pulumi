@@ -43,6 +43,6 @@ users --> updateUser
 
 ## Routes
 
-- [Users Routes](./routes/users/)
-- [Posts Routes](./routes/posts/)
-- [Comments Routes](./routes/comments/)
+- [Users Routes](./routes/users.ts)
+- [Posts Routes](./routes/posts.ts)
+- [Comments Routes](./routes/comments.ts)

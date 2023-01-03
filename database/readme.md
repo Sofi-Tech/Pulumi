@@ -9,9 +9,9 @@ The directory consists of two sub-directories:
 
 ## Tables
 
-- [comments](./tables/comments.ts) - Contains the table creation, schema, types for the comments table.
-- [posts](./tables/posts.ts) - Contains the table creation, schema, types for the posts table.
-- [users](./tables/users.ts) - Contains the table creation, schema, types for the users table.
+- [comments](./tables/comment.ts) - Contains the table creation, schema, types for the comments table.
+- [posts](./tables/post.ts) - Contains the table creation, schema, types for the posts table.
+- [users](./tables/user.ts) - Contains the table creation, schema, types for the users table.
 - [token](./tables/token.ts) - Contains the table creation, schema, types for the token table.
 - [tags](./tables/tags.ts) - Contains the table creation, schema, types for the tags table.
 
