@@ -34,9 +34,9 @@ database --> validation
 
 The API can be divided into three parts:
 
-- [Users APIs](./APIGateway/lambdas/users/readme.md)
-- [Posts APIs](./APIGateway/lambdas/posts/readme.md)
-- [Comments APIs](./APIGateway/lambdas/comments/readme.md)
+- [Users APIs](./APIGateway/lambdas/users/)
+- [Posts APIs](./APIGateway/lambdas/posts/)
+- [Comments APIs](./APIGateway/lambdas/comments/)
 
 ## Setup
 
@@ -107,6 +107,8 @@ curl -X POST \
 Pulumi does not support ignoring [files](https://github.com/pulumi/pulumi/issues/9059), I added the json to this project which will also be pushed to aws which shouldn't be pushed. You should delete the json file after you have deployed the stack.
 
 # Resources created - 220
+
+The total resources created by the stack are **220**. The resources are divided into the following categories:
 
 - APIs - **4**
 - Functions - **33**
