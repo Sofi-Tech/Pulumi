@@ -41,6 +41,7 @@ export const POST_ROUTES: Route[] = [
     method: 'PATCH',
     requiredParameters: [{ name: 'postID', in: 'path' }],
     eventHandler: updatePosts,
+    authorizers,
   },
   {
     path: '/posts/delete/{postID}',

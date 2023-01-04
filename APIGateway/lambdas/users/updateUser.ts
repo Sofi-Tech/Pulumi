@@ -44,12 +44,11 @@ export const updateUser = new lambda.CallbackFunction<
     }
 
     const client = new sdk.DynamoDB.DocumentClient(currentEndpoint);
-    const { name, password, tags } = parsed as IUser;
+    const { name, tags } = parsed as IUser;
     const updateObj = {
       ...(name && { name }),
-      ...(password && { password }),
       ...(tags && { tags }),
-      ...(name || password || tags ? { updated: Date.now() } : {}),
+      ...(name || tags ? { updated: Date.now() } : {}),
     };
 
     if (!Object.keys(updateObj).length) {
