@@ -100,11 +100,10 @@ export const generateFlake = (timestamp: Date | number, EPOCH: number) => {
  */
 export const deconstruct = (snowflake: string, EPOCH: number) => {
   const bigIntSnowflake = BigInt(snowflake);
+  const timestamp = Number(bigIntSnowflake >> 22n) + EPOCH;
   return {
-    timestamp: Number(bigIntSnowflake >> 22n) + EPOCH,
-    get date() {
-      return new Date(this.timestamp);
-    },
+    timestamp,
+    date: new Date(timestamp),
     workerId: Number((bigIntSnowflake >> 17n) & 0b11111n),
     processId: Number((bigIntSnowflake >> 12n) & 0b11111n),
     increment: Number(bigIntSnowflake & 0b111111111111n),
