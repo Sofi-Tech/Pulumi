@@ -67,11 +67,9 @@ export const getPosts = new lambda.CallbackFunction<
             },
           })
           .promise();
-        console.log(tags, posts);
         if (tags) return { ...post, createdAt: timestamp, tags: tags.map(tag => tag.tag) };
         return { ...post, createdAt: timestamp };
       });
-      console.log(posts);
       return populateResponse(STATUS_CODES.OK, await Promise.all(posts));
     } catch (error) {
       console.error(error);

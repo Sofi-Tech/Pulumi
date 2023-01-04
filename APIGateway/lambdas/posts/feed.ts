@@ -119,12 +119,10 @@ export const feed = new lambda.CallbackFunction<
       }
 
       const postResults = await Promise.all(postPromises);
-      console.log(postResults, 'postResults');
       const posts = [];
       for (const postResult of postResults) {
         if (!postResult.Items?.[0]) continue;
         // get all the tags for the post
-        console.log('cool', postResult.Items[0]?.postI);
         const tags = postsIdsTags
           .filter(item => item?.postID === postResult.Items?.[0]?.postID)
           .map(item => item?.tag ?? '');
