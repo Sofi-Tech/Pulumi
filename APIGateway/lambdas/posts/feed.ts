@@ -123,7 +123,7 @@ export const feed = new lambda.CallbackFunction<
       return populateResponse(
         STATUS_CODES.OK,
         posts.map(post => {
-          const { timestamp } = deconstruct(postID, postEpoch);
+          const { timestamp } = deconstruct(post.postID, postEpoch);
           return { ...post, createdAt: timestamp };
         }),
       );
