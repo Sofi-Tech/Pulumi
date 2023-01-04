@@ -34,8 +34,7 @@ database --> validation
 
 The Entry point of the API
 
-- [APIGateway](./APIGateway) - Contains the code for the API Gateway
-- [Routes](./APIGateway/routes) - Contains the routes for the API
+- [APIGateway](./APIGateway) - Contains the code for the API Gateway. [Routes](./APIGateway/routes) - Contains the routes for the API
 
   The API can be divided into three parts:
 
