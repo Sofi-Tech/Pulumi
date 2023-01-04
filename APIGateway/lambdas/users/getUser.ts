@@ -4,7 +4,15 @@ import type { IUser } from '#tables/tables/user';
 import type { lambdaEvent } from '#utils/util';
 
 import { UsersTable } from '#tables/index';
-import { currentEndpoint, CUSTOM_ERROR_CODES, makeCustomError, populateResponse, STATUS_CODES } from '#utils/util';
+import {
+  deconstruct,
+  userEpoch,
+  currentEndpoint,
+  CUSTOM_ERROR_CODES,
+  makeCustomError,
+  populateResponse,
+  STATUS_CODES,
+} from '#utils/util';
 
 /**
  * The getUser lambda
@@ -47,7 +55,8 @@ export const getUser = new lambda.CallbackFunction<
       const user = Items[0] as IUser;
       delete user.password;
       delete user.token;
-      return populateResponse(STATUS_CODES.OK, user);
+      const { timestamp } = deconstruct(user.userID!, userEpoch);
+      return populateResponse(STATUS_CODES.OK, { ...user, createdAt: timestamp });
     } catch (error) {
       if ((error as any).code === 'ConditionalCheckFailedException') {
         return populateResponse(
@@ -104,7 +113,8 @@ export const getUserByEmail = new lambda.CallbackFunction<
 
       delete user.password;
       delete user.token;
-      return populateResponse(STATUS_CODES.OK, user);
+      const { timestamp } = deconstruct(user.userID, userEpoch);
+      return populateResponse(STATUS_CODES.OK, { ...user, createdAt: timestamp });
     } catch (error) {
       console.error(error);
       return populateResponse(

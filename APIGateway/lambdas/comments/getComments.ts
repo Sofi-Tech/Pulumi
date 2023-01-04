@@ -3,7 +3,15 @@ import { lambda, sdk } from '@pulumi/aws';
 import type { lambdaEvent } from '#utils/util';
 
 import { CommentsTable } from '#tables/index';
-import { currentEndpoint, CUSTOM_ERROR_CODES, makeCustomError, populateResponse, STATUS_CODES } from '#utils/util';
+import {
+  commentEpoch,
+  deconstruct,
+  currentEndpoint,
+  CUSTOM_ERROR_CODES,
+  makeCustomError,
+  populateResponse,
+  STATUS_CODES,
+} from '#utils/util';
 
 /**
  * Get all the comments for a post
@@ -56,6 +64,7 @@ export const getComments = new lambda.CallbackFunction<
 
       const commentsWithReplies = comments.map(comment => ({
         ...comment,
+        createdAt: deconstruct(comment.commentID, commentEpoch).timestamp,
         replies: repliesMap[comment.commentID] || [],
       }));
       return populateResponse(STATUS_CODES.OK, commentsWithReplies);

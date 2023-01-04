@@ -9,6 +9,8 @@ import type { lambdaEvent } from '#utils/util';
 
 import { PostsTable, TagsTable, UsersTable } from '#tables/index';
 import {
+  deconstruct,
+  postEpoch,
   currentEndpoint,
   CUSTOM_ERROR_CODES,
   makeCustomError,
@@ -118,7 +120,13 @@ export const feed = new lambda.CallbackFunction<
       }
 
       if (!posts.length) return populateResponse(STATUS_CODES.OK, []);
-      return populateResponse(STATUS_CODES.OK, posts);
+      return populateResponse(
+        STATUS_CODES.OK,
+        posts.map(post => {
+          const { timestamp } = deconstruct(postID, postEpoch);
+          return { ...post, createdAt: timestamp };
+        }),
+      );
     } catch (error) {
       console.error(error);
       return populateResponse(

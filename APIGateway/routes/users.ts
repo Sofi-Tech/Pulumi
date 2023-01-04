@@ -58,9 +58,8 @@ export const USER_ROUTES: Route[] = [
     eventHandler: getUserByEmail,
   },
   {
-    path: '/users/update/{userID}',
+    path: '/users/update/me',
     method: 'PATCH',
-    requiredParameters: [{ name: 'userID', in: 'path' }],
     eventHandler: updateUser,
     authorizers,
   },

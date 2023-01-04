@@ -35,6 +35,13 @@ export const updateUser = new lambda.CallbackFunction<
   runtime: lambda.Runtime.NodeJS16dX,
   callback: async event => {
     const email = decodeJWT(getToken(event)).data?.email;
+    if (!email) {
+      return populateResponse(
+        STATUS_CODES.UNAUTHORIZED,
+        makeCustomError('Unauthorized', CUSTOM_ERROR_CODES.USER_ERROR),
+      );
+    }
+
     const { parsed, error } = validateUserBody(event, {});
     if (!parsed || error) {
       return populateResponse(

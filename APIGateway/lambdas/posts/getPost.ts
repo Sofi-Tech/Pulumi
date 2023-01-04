@@ -5,7 +5,15 @@ import { lambda, sdk } from '@pulumi/aws';
 import type { lambdaEvent } from '#utils/util';
 
 import { PostsTable } from '#tables/index';
-import { currentEndpoint, CUSTOM_ERROR_CODES, makeCustomError, populateResponse, STATUS_CODES } from '#utils/util';
+import {
+  deconstruct,
+  postEpoch,
+  currentEndpoint,
+  CUSTOM_ERROR_CODES,
+  makeCustomError,
+  populateResponse,
+  STATUS_CODES,
+} from '#utils/util';
 
 /**
  * Get a post
@@ -45,7 +53,8 @@ export const getPost = new lambda.CallbackFunction<
           makeCustomError('Post not found', CUSTOM_ERROR_CODES.RESOURCE_NOT_FOUND),
         );
       const post = Items[0];
-      return populateResponse(STATUS_CODES.OK, post);
+      const { timestamp } = deconstruct(post.postID, postEpoch);
+      return populateResponse(STATUS_CODES.OK, { ...post, createdAt: timestamp });
     } catch (error) {
       console.error(error);
       return populateResponse(

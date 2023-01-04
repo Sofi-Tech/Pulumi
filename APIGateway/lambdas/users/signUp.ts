@@ -6,6 +6,7 @@ import type { lambdaEvent } from '#utils/util';
 import { UsersTable } from '#tables/index';
 import { validateUserBody } from '#tables/validation/users';
 import {
+  deconstruct,
   currentEndpoint,
   CUSTOM_ERROR_CODES,
   makeCustomError,
@@ -68,7 +69,8 @@ export const signUp = new lambda.CallbackFunction<
 
       delete user.token;
       delete user.password;
-      return populateResponse(STATUS_CODES.OK, { ...user, token });
+      const { timestamp } = deconstruct(id, userEpoch);
+      return populateResponse(STATUS_CODES.OK, { ...user, token, createdAt: timestamp });
     } catch (error) {
       if ((error as any).code === 'ConditionalCheckFailedException') {
         return populateResponse(

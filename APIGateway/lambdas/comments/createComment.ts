@@ -8,6 +8,7 @@ import type { lambdaEvent } from '#utils/util';
 import { CommentsTable, PostsTable } from '#tables/index';
 import { validateCommentBody } from '#tables/validation/comments';
 import {
+  deconstruct,
   currentEndpoint,
   decodeJWT,
   generateFlake,
@@ -114,8 +115,11 @@ export const createComment = new lambda.CallbackFunction<
           ConditionExpression: 'attribute_not_exists(commentID)',
         })
         .promise();
-
-      return populateResponse(STATUS_CODES.OK, comment);
+      const { timestamp } = deconstruct(comment.commentID!, commentEpoch);
+      return populateResponse(STATUS_CODES.OK, {
+        ...comment,
+        createdAt: timestamp,
+      });
     } catch (error) {
       console.error(error);
       return populateResponse(

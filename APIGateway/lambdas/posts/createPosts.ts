@@ -8,6 +8,7 @@ import type { lambdaEvent } from '#utils/util';
 import { PostsTable, TagsTable } from '#tables/index';
 import { validatePostBody } from '#tables/validation/posts';
 import {
+  deconstruct,
   currentEndpoint,
   CUSTOM_ERROR_CODES,
   makeCustomError,
@@ -88,7 +89,8 @@ export const createPosts = new lambda.CallbackFunction<
         })
         .promise();
 
-      return populateResponse(STATUS_CODES.OK, post);
+      const { timestamp } = deconstruct(postID, postEpoch);
+      return populateResponse(STATUS_CODES.OK, { ...post, createdAt: timestamp });
     } catch (error) {
       console.error(error);
       return populateResponse(

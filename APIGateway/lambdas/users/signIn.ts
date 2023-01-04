@@ -9,6 +9,8 @@ import type { lambdaEvent } from '#utils/util';
 import { TokenTable, UsersTable } from '#tables/index';
 import { validateUserBody } from '#tables/validation/users';
 import {
+  deconstruct,
+  userEpoch,
   currentEndpoint,
   CUSTOM_ERROR_CODES,
   makeCustomError,
@@ -79,7 +81,7 @@ export const signIn = new lambda.CallbackFunction<
 
       if (
         cryptoDecrypt(hashedPassword) === password ||
-        // since I didn't store hashed password in development
+        // since we don't store hashed password in development
         (process.env.NODE_ENV === 'development' && hashedPassword === password)
       ) {
         // sign token
@@ -129,7 +131,8 @@ export const signIn = new lambda.CallbackFunction<
           .promise();
         delete user.password;
         delete user.token;
-        return populateResponse(STATUS_CODES.OK, { ...user, token });
+        const { timestamp } = deconstruct(userID, userEpoch);
+        return populateResponse(STATUS_CODES.OK, { ...user, token, createdAt: timestamp });
       }
 
       return populateResponse(

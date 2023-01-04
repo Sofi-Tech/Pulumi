@@ -5,7 +5,15 @@ import { lambda, sdk } from '@pulumi/aws';
 import type { lambdaEvent } from '#utils/util';
 
 import { PostsTable } from '#tables/index';
-import { currentEndpoint, CUSTOM_ERROR_CODES, makeCustomError, populateResponse, STATUS_CODES } from '#utils/util';
+import {
+  deconstruct,
+  postEpoch,
+  currentEndpoint,
+  CUSTOM_ERROR_CODES,
+  makeCustomError,
+  populateResponse,
+  STATUS_CODES,
+} from '#utils/util';
 
 /**
  * Get all posts
@@ -45,7 +53,13 @@ export const getPosts = new lambda.CallbackFunction<
         );
       }
 
-      return populateResponse(STATUS_CODES.OK, Items);
+      return populateResponse(
+        STATUS_CODES.OK,
+        Items.map(post => {
+          const { timestamp } = deconstruct(post.postID, postEpoch);
+          return { ...post, createdAt: timestamp };
+        }),
+      );
     } catch (error) {
       console.error(error);
       return populateResponse(
