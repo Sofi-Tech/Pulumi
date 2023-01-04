@@ -1,442 +1,529 @@
 {
-  "info": {
-    "_postman_id": "83245c92-48e4-480f-a0eb-37300309f90f",
-    "name": "Blog Api",
-    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-    "_exporter_id": "18541570"
-  },
-  "item": [
-    {
-      "name": "Users",
-      "item": [
-        {
-          "name": "Sign Up",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "var jsonData = JSON.parse(responseBody);\r",
-                  "pm.collectionVariables.set('token', jsonData.token);\r",
-                  ""
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"name\": \"Voxelli\",\r\n    \"email\": \"Voxelli@gmail.com\",\r\n    \"password\": \"Password2@\",\r\n    \"tags\": [\"nodejs\", \"javascript\", \"rust\"]\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{apiURL}}/users/signup",
-              "host": ["{{apiURL}}"],
-              "path": ["users", "signup"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Sign In",
-          "event": [
-            {
-              "listen": "test",
-              "script": {
-                "exec": [
-                  "var jsonData = JSON.parse(responseBody);\r",
-                  "pm.collectionVariables.set('token', jsonData.token);\r",
-                  ""
-                ],
-                "type": "text/javascript"
-              }
-            }
-          ],
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"email\": \"voxelli@gmail.com\",\r\n    \"password\": \"Password2@\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{apiURL}}/users/signin",
-              "host": ["{{apiURL}}"],
-              "path": ["users", "signin"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Sign Out",
-          "request": {
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"email\": \"Voxelli@gmail.com\",\r\n    \"password\": \"Password2@\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{apiURL}}/users/signout",
-              "host": ["{{apiURL}}"],
-              "path": ["users", "signout"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get User",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{apiURL}}/users/264980229741740746",
-              "host": ["{{apiURL}}"],
-              "path": ["users", "264980229741740746"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Update User",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "PATCH",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"tags\": [\"typescript\", \"aws\", \"pulumi\"]\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{apiURL}}/users/update/265059011441853572",
-              "host": ["{{apiURL}}"],
-              "path": ["users", "update", "265059011441853572"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Posts",
-      "item": [
-        {
-          "name": "Create",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"title\": \"how to create an api using express.\",\r\n    \"content\": \"Will show later.\",\r\n    \"tags\": [\"express\"]\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{apiURL}}/posts/create",
-              "host": ["{{apiURL}}"],
-              "path": ["posts", "create"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Update",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "PATCH",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"content\": \"Will show later with node.\",\r\n    \"postID\": \"264911607262478336\",\r\n    \"tags\": [\"node\"]\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{apiURL}}/posts/update",
-              "host": ["{{apiURL}}"],
-              "path": ["posts", "update"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Delete",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{apiURL}}/posts/delete/265278591984599040",
-              "host": ["{{apiURL}}"],
-              "path": ["posts", "delete", "265278591984599040"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get Post",
-          "request": {
-            "auth": {
-              "type": "noauth"
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{apiURL}}/posts/post/264925238410739712",
-              "host": ["{{apiURL}}"],
-              "path": ["posts", "post", "264925238410739712"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get Post Of A User",
-          "request": {
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{apiURL}}/posts/264896538931757056",
-              "host": ["{{apiURL}}"],
-              "path": ["posts", "264896538931757056"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Feed",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{apiURL}}/posts/feed/265231436527832451",
-              "host": ["{{apiURL}}"],
-              "path": ["posts", "feed", "265231436527832451"]
-            }
-          },
-          "response": []
-        }
-      ]
-    },
-    {
-      "name": "Comments",
-      "item": [
-        {
-          "name": "Create",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "POST",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"content\": \"Cool blog\",\r\n    \"replyTo\": \"264777396157284352\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{apiURL}}/comments/create/264777084214312960",
-              "host": ["{{apiURL}}"],
-              "path": ["comments", "create", "264777084214312960"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Update",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "PATCH",
-            "header": [],
-            "body": {
-              "mode": "raw",
-              "raw": "{\r\n    \"content\": \"Not cool blog\"\r\n}",
-              "options": {
-                "raw": {
-                  "language": "json"
-                }
-              }
-            },
-            "url": {
-              "raw": "{{apiURL}}/comments/update/264615476875886592",
-              "host": ["{{apiURL}}"],
-              "path": ["comments", "update", "264615476875886592"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Delete",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "DELETE",
-            "header": [],
-            "url": {
-              "raw": "{{apiURL}}/comments/delete/2645578611604848",
-              "host": ["{{apiURL}}"],
-              "path": ["comments", "delete", "2645578611604848"]
-            }
-          },
-          "response": []
-        },
-        {
-          "name": "Get Comments",
-          "request": {
-            "auth": {
-              "type": "bearer",
-              "bearer": [
-                {
-                  "key": "token",
-                  "value": "{{token}}",
-                  "type": "string"
-                }
-              ]
-            },
-            "method": "GET",
-            "header": [],
-            "url": {
-              "raw": "{{apiURL}}/comments/264557939212288000",
-              "host": ["{{apiURL}}"],
-              "path": ["comments", "264557939212288000"]
-            }
-          },
-          "response": []
-        }
-      ]
-    }
-  ],
-  "event": [
-    {
-      "listen": "prerequest",
-      "script": {
-        "type": "text/javascript",
-        "exec": [""]
-      }
-    },
-    {
-      "listen": "test",
-      "script": {
-        "type": "text/javascript",
-        "exec": [""]
-      }
-    }
-  ],
-  "variable": [
-    {
-      "key": "apiURL",
-      "value": "https://l7i6e0vi5c.execute-api.ap-south-1.amazonaws.com/dev",
-      "type": "string"
-    },
-    {
-      "key": "token",
-      "value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjI2MjMxMjg2NDA0NjUxNDE3NiIsImlhdCI6MTY3MjA4MzEwNCwiZXhwIjoxNjc0Njc1MTA0fQ.A3TB59YdD8Am4Bng_HFHT8w2Lcow01EvQKgbVaRDtEY",
-      "type": "string"
-    }
-  ]
+	"info": {
+		"_postman_id": "83245c92-48e4-480f-a0eb-37300309f90f",
+		"name": "Blog Api",
+		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
+		"_exporter_id": "18541570"
+	},
+	"item": [
+		{
+			"name": "Users",
+			"item": [
+				{
+					"name": "Sign Up",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set('token', jsonData.token);\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"name\": \"Voxelli\",\r\n    \"email\": \"Voxelli@gmail.com\",\r\n    \"password\": \"Password2@\",\r\n    \"tags\": [\"nodejs\", \"javascript\", \"rust\"]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{apiURL}}/users/signup",
+							"host": [
+								"{{apiURL}}"
+							],
+							"path": [
+								"users",
+								"signup"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Sign In",
+					"event": [
+						{
+							"listen": "test",
+							"script": {
+								"exec": [
+									"var jsonData = JSON.parse(responseBody);\r",
+									"pm.collectionVariables.set('token', jsonData.token);\r",
+									""
+								],
+								"type": "text/javascript"
+							}
+						}
+					],
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"Voxelli@gmail.com\",\r\n    \"password\": \"Password2@\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{apiURL}}/users/signin",
+							"host": [
+								"{{apiURL}}"
+							],
+							"path": [
+								"users",
+								"signin"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Sign Out",
+					"request": {
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"email\": \"Voxelli@gmail.com\",\r\n    \"password\": \"Password2@\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{apiURL}}/users/signout",
+							"host": [
+								"{{apiURL}}"
+							],
+							"path": [
+								"users",
+								"signout"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get User",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{apiURL}}/users/265579999023726592",
+							"host": [
+								"{{apiURL}}"
+							],
+							"path": [
+								"users",
+								"265579999023726592"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update User",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"tags\": [\"express\"]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{apiURL}}/users/update/me",
+							"host": [
+								"{{apiURL}}"
+							],
+							"path": [
+								"users",
+								"update",
+								"me"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Posts",
+			"item": [
+				{
+					"name": "Create",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"title\": \"how to create an api using express.\",\r\n    \"content\": \"Will show later.\",\r\n    \"tags\": [\"express\"]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{apiURL}}/posts/create",
+							"host": [
+								"{{apiURL}}"
+							],
+							"path": [
+								"posts",
+								"create"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"content\": \"Will show later with node.\",\r\n    \"tags\": [\"express\"]\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{apiURL}}/posts/update/265760144850288640",
+							"host": [
+								"{{apiURL}}"
+							],
+							"path": [
+								"posts",
+								"update",
+								"265760144850288640"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{apiURL}}/posts/delete/265278591984599040",
+							"host": [
+								"{{apiURL}}"
+							],
+							"path": [
+								"posts",
+								"delete",
+								"265278591984599040"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Post",
+					"request": {
+						"auth": {
+							"type": "noauth"
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{apiURL}}/posts/post/265760123710996480",
+							"host": [
+								"{{apiURL}}"
+							],
+							"path": [
+								"posts",
+								"post",
+								"265760123710996480"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Post Of A User",
+					"request": {
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{apiURL}}/posts/265579999023726592",
+							"host": [
+								"{{apiURL}}"
+							],
+							"path": [
+								"posts",
+								"265579999023726592"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Feed",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{apiURL}}/posts/feed/null",
+							"host": [
+								"{{apiURL}}"
+							],
+							"path": [
+								"posts",
+								"feed",
+								"null"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		},
+		{
+			"name": "Comments",
+			"item": [
+				{
+					"name": "Create",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "POST",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"content\": \"Cool blog\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{apiURL}}/comments/create/265277837332840448",
+							"host": [
+								"{{apiURL}}"
+							],
+							"path": [
+								"comments",
+								"create",
+								"265277837332840448"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Update",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "PATCH",
+						"header": [],
+						"body": {
+							"mode": "raw",
+							"raw": "{\r\n    \"content\": \"Not cool blog\"\r\n}",
+							"options": {
+								"raw": {
+									"language": "json"
+								}
+							}
+						},
+						"url": {
+							"raw": "{{apiURL}}/comments/update/264615476875886592",
+							"host": [
+								"{{apiURL}}"
+							],
+							"path": [
+								"comments",
+								"update",
+								"264615476875886592"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Delete",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "DELETE",
+						"header": [],
+						"url": {
+							"raw": "{{apiURL}}/comments/delete/2645578611604848",
+							"host": [
+								"{{apiURL}}"
+							],
+							"path": [
+								"comments",
+								"delete",
+								"2645578611604848"
+							]
+						}
+					},
+					"response": []
+				},
+				{
+					"name": "Get Comments",
+					"request": {
+						"auth": {
+							"type": "bearer",
+							"bearer": [
+								{
+									"key": "token",
+									"value": "{{token}}",
+									"type": "string"
+								}
+							]
+						},
+						"method": "GET",
+						"header": [],
+						"url": {
+							"raw": "{{apiURL}}/comments/264557939212288000",
+							"host": [
+								"{{apiURL}}"
+							],
+							"path": [
+								"comments",
+								"264557939212288000"
+							]
+						}
+					},
+					"response": []
+				}
+			]
+		}
+	],
+	"event": [
+		{
+			"listen": "prerequest",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		},
+		{
+			"listen": "test",
+			"script": {
+				"type": "text/javascript",
+				"exec": [
+					""
+				]
+			}
+		}
+	],
+	"variable": [
+		{
+			"key": "apiURL",
+			"value": "https://l7i6e0vi5c.execute-api.ap-south-1.amazonaws.com/dev",
+			"type": "string"
+		},
+		{
+			"key": "token",
+			"value": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjI2MjMxMjg2NDA0NjUxNDE3NiIsImlhdCI6MTY3MjA4MzEwNCwiZXhwIjoxNjc0Njc1MTA0fQ.A3TB59YdD8Am4Bng_HFHT8w2Lcow01EvQKgbVaRDtEY",
+			"type": "string"
+		}
+	]
 }
