@@ -5,7 +5,7 @@ import { getToken } from '../../auth';
 
 import type { lambdaEvent } from '#utils/util';
 
-import { PostsTable } from '#tables/index';
+import { PostsTable, TagsTable } from '#tables/index';
 import {
   currentEndpoint,
   CUSTOM_ERROR_CODES,
@@ -44,16 +44,51 @@ export const deletePost = new lambda.CallbackFunction<
 
     const client = new sdk.DynamoDB.DocumentClient(currentEndpoint);
     try {
-      await client
-        .delete({
-          TableName: PostsTable.get(),
-          Key: {
-            userID,
-            postID,
+      const { Items } = await client
+        .query({
+          TableName: TagsTable.get(),
+          IndexName: 'postID',
+          KeyConditionExpression: 'postID = :postID',
+          ExpressionAttributeValues: {
+            ':postID': postID,
           },
-          ConditionExpression: 'attribute_exists(postID)',
         })
         .promise();
+
+      if (!Items?.length)
+        return populateResponse(
+          STATUS_CODES.NOT_FOUND,
+          makeCustomError('Post not found', CUSTOM_ERROR_CODES.POST_ERROR),
+        );
+
+      const oldTag = Items[0].tag;
+
+      await client
+        .transactWrite({
+          TransactItems: [
+            {
+              Delete: {
+                TableName: TagsTable.get(),
+                Key: {
+                  postID,
+                  tag: oldTag,
+                },
+              },
+            },
+            {
+              Delete: {
+                TableName: PostsTable.get(),
+                Key: {
+                  userID,
+                  postID,
+                },
+                ConditionExpression: 'attribute_exists(postID)',
+              },
+            },
+          ],
+        })
+        .promise();
+
       return populateResponse(STATUS_CODES.OK, 'Post deleted');
     } catch (error) {
       if ((error as any).code === 'ConditionalCheckFailedException') {

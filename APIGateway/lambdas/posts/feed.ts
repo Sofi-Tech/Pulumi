@@ -4,10 +4,12 @@ import { lambda, sdk } from '@pulumi/aws';
 
 import { getToken } from '../../auth';
 
+import type { IComment } from '#tables/tables/comment';
+import type { IPost } from '#tables/tables/post';
 import type { CUser, IUser } from '#tables/tables/user';
 import type { lambdaEvent } from '#utils/util';
 
-import { PostsTable, TagsTable, UsersTable } from '#tables/index';
+import { CommentsTable, PostsTable, TagsTable, UsersTable } from '#tables/index';
 import {
   deconstruct,
   postEpoch,
@@ -82,22 +84,26 @@ export const feed = new lambda.CallbackFunction<
       }
 
       const results = await Promise.all(promises);
-      const postsIds = results.map(result => result.Items?.map(item => item.postID));
+      const postsIdsTags = results.flatMap(result => result.Items);
 
+      interface tagItem {
+        postID: string;
+        tag: string;
+      }
       // unique postIds using set
-      const uniquePostsIds = [...new Set(postsIds.flat() as string[])];
+      const uniquePosts = [...new Set(postsIdsTags as tagItem[])];
 
       // use postID to get the next postIds from the array
-      let nextPostIds: string[] | null = null;
+      let nextPostIds: tagItem[] | null = null;
       if (postID) {
-        const idx = uniquePostsIds.indexOf(postID);
-        nextPostIds = uniquePostsIds.slice(idx + 1);
+        const idx = uniquePosts.indexOf(postID);
+        nextPostIds = uniquePosts.slice(idx + 1);
       }
 
       // only 20 posts
-      const postsToFeed = nextPostIds?.slice(0, 20) ?? uniquePostsIds.slice(0, 20);
+      const postsToFeed = nextPostIds?.slice(0, 20) ?? uniquePosts.slice(0, 20);
       const postPromises = [];
-      for (const postId of postsToFeed) {
+      for (const post of postsToFeed) {
         postPromises.push(
           client
             .query({
@@ -105,7 +111,7 @@ export const feed = new lambda.CallbackFunction<
               IndexName: 'postID',
               KeyConditionExpression: 'postID = :postID',
               ExpressionAttributeValues: {
-                ':postID': postId,
+                ':postID': post.postID,
               },
             })
             .promise(),
@@ -113,17 +119,48 @@ export const feed = new lambda.CallbackFunction<
       }
 
       const postResults = await Promise.all(postPromises);
+      console.log(postResults, 'postResults');
       const posts = [];
       for (const postResult of postResults) {
-        if (!postResult.Items) continue;
-        posts.push(...postResult.Items);
+        if (!postResult.Items?.[0]) continue;
+        // get all the tags for the post
+        console.log('cool', postResult.Items[0]?.postI);
+        const tags = postsIdsTags
+          .filter(item => item?.postID === postResult.Items?.[0]?.postID)
+          .map(item => item?.tag ?? '');
+        const { Items: comments } = await client
+          .query({
+            TableName: CommentsTable.get(),
+            IndexName: 'postID',
+            KeyConditionExpression: 'postID = :postID',
+            ExpressionAttributeValues: {
+              ':postID': postResult.Items[0]?.postID,
+            },
+          })
+          .promise();
+
+        posts.push(
+          ...postResult.Items.map(
+            item =>
+              ({
+                ...item,
+                tag: tags,
+                comments:
+                  comments?.map((com: IComment) => ({
+                    commentID: com.commentID,
+                    content: com.content,
+                    userID: com.userID,
+                  })) ?? [],
+              } as IPost),
+          ),
+        );
       }
 
       if (!posts.length) return populateResponse(STATUS_CODES.OK, []);
       return populateResponse(
         STATUS_CODES.OK,
         posts.map(post => {
-          const { timestamp } = deconstruct(post.postID, postEpoch);
+          const { timestamp } = deconstruct(post.postID!, postEpoch);
           return { ...post, createdAt: timestamp };
         }),
       );

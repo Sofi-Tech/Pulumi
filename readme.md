@@ -58,13 +58,19 @@ The Entry point of the API
 yarn install
 ```
 
-3. Create a new stack
+3. Add environment variables | Replace the values with your own
+
+```bash
+cp .env.example .env
+```
+
+4. Create a new stack
 
 ```bash
 pulumi stack init
 ```
 
-4. Set AWS configurations
+5. Set AWS configurations
 
 ```bash
 pulumi config set aws:accessKey <access-key>
@@ -74,13 +80,13 @@ pulumi config set aws:region <region>
 
 **Note**: It is advised not to use root user for the access. Instead create the access from IAM and use the access key and secret key.
 
-5. Create a new Pulumi access token
+6. Create a new Pulumi access token
 
 ```bash
 pulumi login
 ```
 
-6. Deploy the stack
+7. Deploy the stack
 
 ```bash
 yarn push

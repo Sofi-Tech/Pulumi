@@ -4,7 +4,7 @@ import { lambda, sdk } from '@pulumi/aws';
 
 import type { lambdaEvent } from '#utils/util';
 
-import { PostsTable } from '#tables/index';
+import { PostsTable, TagsTable } from '#tables/index';
 import {
   deconstruct,
   postEpoch,
@@ -53,6 +53,17 @@ export const getPost = new lambda.CallbackFunction<
           makeCustomError('Post not found', CUSTOM_ERROR_CODES.RESOURCE_NOT_FOUND),
         );
       const post = Items[0];
+      const { Items: tags } = await client
+        .query({
+          TableName: TagsTable.get(),
+          IndexName: 'postID',
+          KeyConditionExpression: 'postID = :postID',
+          ExpressionAttributeValues: {
+            ':postID': postID,
+          },
+        })
+        .promise();
+      if (tags) post.tags = tags.map(tag => tag.tag);
       const { timestamp } = deconstruct(post.postID, postEpoch);
       return populateResponse(STATUS_CODES.OK, { ...post, createdAt: timestamp });
     } catch (error) {

@@ -4,7 +4,7 @@ import { lambda, sdk } from '@pulumi/aws';
 
 import type { lambdaEvent } from '#utils/util';
 
-import { PostsTable } from '#tables/index';
+import { PostsTable, TagsTable } from '#tables/index';
 import {
   deconstruct,
   postEpoch,
@@ -53,13 +53,26 @@ export const getPosts = new lambda.CallbackFunction<
         );
       }
 
-      return populateResponse(
-        STATUS_CODES.OK,
-        Items.map(post => {
-          const { timestamp } = deconstruct(post.postID, postEpoch);
-          return { ...post, createdAt: timestamp };
-        }),
-      );
+      // we use this approach as batch get and transact get have a limit of 25
+      // approach two would be to paginate and do 25 at a time.
+      const posts = Items.map(async post => {
+        const { timestamp } = deconstruct(post.postID, postEpoch);
+        const { Items: tags } = await client
+          .query({
+            TableName: TagsTable.get(),
+            IndexName: 'postID',
+            KeyConditionExpression: 'postID = :postID',
+            ExpressionAttributeValues: {
+              ':postID': post.postID,
+            },
+          })
+          .promise();
+        console.log(tags, posts);
+        if (tags) return { ...post, createdAt: timestamp, tags: tags.map(tag => tag.tag) };
+        return { ...post, createdAt: timestamp };
+      });
+      console.log(posts);
+      return populateResponse(STATUS_CODES.OK, await Promise.all(posts));
     } catch (error) {
       console.error(error);
       return populateResponse(

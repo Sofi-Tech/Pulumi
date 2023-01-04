@@ -5,7 +5,7 @@ import { getToken } from '../../auth';
 import type { CPost, IPost } from '#tables/tables/post';
 import type { lambdaEvent } from '#utils/util';
 
-import { PostsTable } from '#tables/index';
+import { PostsTable, TagsTable } from '#tables/index';
 import { validatePostBody } from '#tables/validation/posts';
 import {
   currentEndpoint,
@@ -57,9 +57,19 @@ export const updatePosts = new lambda.CallbackFunction<
     const updateObj = {
       ...(title && { title }),
       ...(content && { content }),
-      ...(tags && { tags }),
       ...(title || content || tags ? { updated: Date.now() } : {}),
     };
+
+    const tagsToStore =
+      tags?.map((tag: string) => ({
+        Put: {
+          TableName: TagsTable.get(),
+          Item: {
+            postID,
+            tag,
+          },
+        },
+      })) ?? null;
 
     if (!Object.keys(updateObj).length) {
       return populateResponse(
@@ -72,6 +82,47 @@ export const updatePosts = new lambda.CallbackFunction<
 
     const client = new sdk.DynamoDB.DocumentClient(currentEndpoint);
     try {
+      // fetch the tag first
+      if (tagsToStore?.length) {
+        const { Items } = await client
+          .query({
+            TableName: TagsTable.get(),
+            IndexName: 'postID',
+            KeyConditionExpression: 'postID = :postID',
+            ExpressionAttributeValues: {
+              ':postID': postID,
+            },
+          })
+          .promise();
+
+        if (!Items?.length)
+          return populateResponse(
+            STATUS_CODES.NOT_FOUND,
+            makeCustomError('Post not found', CUSTOM_ERROR_CODES.POST_ERROR),
+          );
+
+        const oldTag = Items[0].tag;
+        // delete old tag from tag table
+        await client
+          .transactWrite({
+            TransactItems: [
+              // delete old tag
+              {
+                Delete: {
+                  TableName: TagsTable.get(),
+                  Key: {
+                    postID,
+                    tag: oldTag,
+                  },
+                },
+              },
+              // add new tags
+              ...tagsToStore,
+            ],
+          })
+          .promise();
+      }
+
       await client
         .update({
           TableName: PostsTable.get(),
