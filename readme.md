@@ -132,3 +132,7 @@ The total resources created by the stack are **220**. The resources are divided 
 # Todo:
 
 - [ ] Write tests using vitest
+- [ ] Use jmeter to test the performance
+- [ ] Add a CI/CD pipeline
+- [ ] Add a monitoring system
+- [ ] Add a logging system
